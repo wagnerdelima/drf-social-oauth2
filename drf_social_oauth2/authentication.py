@@ -25,6 +25,7 @@ class SocialAuthentication(BaseAuthentication):
 
         Authorization: Bearer facebook 401f7ac837da42b97f613d789819ff93537bee6a
     """
+
     www_authenticate_realm = 'api'
 
     def authenticate(self, request):
@@ -54,7 +55,14 @@ class SocialAuthentication(BaseAuthentication):
         strategy = load_strategy(request=request)
 
         try:
-            backend = load_backend(strategy, backend, reverse("%s:%s:complete" % (DRFSO2_URL_NAMESPACE, NAMESPACE), args=(backend,)))
+            backend = load_backend(
+                strategy,
+                backend,
+                reverse(
+                    "%s:%s:complete" % (DRFSO2_URL_NAMESPACE, NAMESPACE),
+                    args=(backend,),
+                ),
+            )
         except MissingBackend:
             msg = 'Invalid token header. Invalid backend.'
             raise exceptions.AuthenticationFailed(msg)
