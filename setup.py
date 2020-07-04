@@ -6,12 +6,12 @@ if sys.version_info < (3, 5):
 
 setup(
     name='drf-social-oauth2',
-    version=__import__('rest_framework_social_oauth2').__version__,
-    description=__import__('rest_framework_social_oauth2').__doc__,
+    version=__import__('drf_social_oauth2').__version__,
+    description=__import__('drf_social_oauth2').__doc__,
     long_description=open('README.rst').read(),
     author='Wagner de Lima',
     author_email='waglds@gmail.com',
-    url='https://github.com/PhilipGarnero/django-rest-framework-social-oauth2',
+    url='https://github.com/wagnerdelima/drf-social-oauth2',
     license='MIT',
     packages=find_packages(),
     classifiers=[
