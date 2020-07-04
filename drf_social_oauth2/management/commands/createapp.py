@@ -1,5 +1,5 @@
 from django.contrib.auth.models import User
-from django.core.management.base import BaseCommand, CommandError
+from django.core.management.base import BaseCommand
 from oauth2_provider.models import Application
 from oauth2_provider.generators import generate_client_id, generate_client_secret
 
