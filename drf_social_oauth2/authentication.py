@@ -4,14 +4,15 @@ except ImportError:  # Will be removed in Django 2.0
     from django.core.urlresolvers import reverse
 
 from rest_framework.authentication import BaseAuthentication, get_authorization_header
-from rest_framework import exceptions, HTTP_HEADER_ENCODING
+from rest_framework import HTTP_HEADER_ENCODING
+from rest_framework.exceptions import AuthenticationFailed
 
 from social_django.views import NAMESPACE
 from social_django.utils import load_backend, load_strategy
 from social_core.exceptions import MissingBackend
 from social_core.utils import requests
 
-from .settings import DRFSO2_URL_NAMESPACE
+from drf_social_oauth2.settings import DRFSO2_URL_NAMESPACE
 
 
 class SocialAuthentication(BaseAuthentication):
@@ -40,14 +41,14 @@ class SocialAuthentication(BaseAuthentication):
             return None
 
         if len(auth) == 1:
-            msg = 'Invalid token header. No backend provided.'
-            raise exceptions.AuthenticationFailed(msg)
+            message = 'Invalid token header. No backend provided.'
+            raise AuthenticationFailed(message)
         elif len(auth) == 2:
-            msg = 'Invalid token header. No credentials provided.'
-            raise exceptions.AuthenticationFailed(msg)
+            message = 'Invalid token header. No credentials provided.'
+            raise AuthenticationFailed(message)
         elif len(auth) > 3:
-            msg = 'Invalid token header. Token string should not contain spaces.'
-            raise exceptions.AuthenticationFailed(msg)
+            message = 'Invalid token header. Token string should not contain spaces.'
+            raise AuthenticationFailed(message)
 
         token = auth[2]
         backend = auth[1]
@@ -64,18 +65,18 @@ class SocialAuthentication(BaseAuthentication):
                 ),
             )
         except MissingBackend:
-            msg = 'Invalid token header. Invalid backend.'
-            raise exceptions.AuthenticationFailed(msg)
+            message = 'Invalid token header. Invalid backend.'
+            raise AuthenticationFailed(message)
 
         try:
             user = backend.do_auth(access_token=token)
         except requests.HTTPError as e:
-            msg = e.response.text
-            raise exceptions.AuthenticationFailed(msg)
+            message = e.response.text
+            raise AuthenticationFailed(message)
 
         if not user:
-            msg = 'Bad credentials.'
-            raise exceptions.AuthenticationFailed(msg)
+            message = 'Bad credentials.'
+            raise AuthenticationFailed(message)
         return user, token
 
     def authenticate_header(self, request):
