@@ -1,4 +1,7 @@
-Django REST Framework Social OAuth2
+Not Published at PyPI Yet
+=========================
+
+DRF Social OAuth2
 ===================================
 
 .. image:: https://badge.fury.io/py/django-rest-framework-social-oauth2.svg
@@ -6,19 +9,23 @@ Django REST Framework Social OAuth2
 
 This module provides OAuth2 social authentication support for applications in Django REST Framework.
 
-The aim of this package is to help set up social authentication for your REST API. It also helps setting up your OAuth2 provider.
+The aim of this package is to help set up social authentication for your REST API. It also helps setting up your OAuth2
+provider.
 
-This package relies on `python-social-auth <http://python-social-auth.readthedocs.io>`_ and `django-oauth-toolkit <https://django-oauth-toolkit.readthedocs.org>`_.
+This package relies on `python-social-auth <http://python-social-auth.readthedocs.io>`_ and
+`django-oauth-toolkit <https://django-oauth-toolkit.readthedocs.org>`_.
 You should probably read their docs if you were to go further than what is done here.
-If you have some hard time understanding OAuth2, you can read a simple explanation `here <https://aaronparecki.com/articles/2012/07/29/1/oauth2-simplified>`_.
+If you have some hard time understanding OAuth2, you can read a simple explanation
+`here <https://aaronparecki.com/articles/2012/07/29/1/oauth2-simplified>`_.
 
 
 Installation
 ------------
 
-Install with pip::
+Once this framework is published at the PyPI, install it with pip::
 
-    pip install django-rest-framework-social-oauth2
+    # it's not yet published
+    pip install drf_social_oauth2
 
 
 Add the following to your ``INSTALLED_APPS``:
@@ -29,7 +36,7 @@ Add the following to your ``INSTALLED_APPS``:
         ...
         'oauth2_provider',
         'social_django',
-        'rest_framework_social_oauth2',
+        'drf_social_oauth2',
     )
 
 
@@ -39,7 +46,7 @@ Include social auth urls to your urls.py:
 
     urlpatterns = patterns(
         ...
-        (r'^auth/', include('rest_framework_social_oauth2.urls')),
+        (r'^auth/', include('drf_social_oauth2.urls')),
     )
 
 
@@ -53,7 +60,8 @@ Add these context processors to your ``TEMPLATE_CONTEXT_PROCESSORS``:
         'social_django.context_processors.login_redirect',
     )
 
-NB: since Django version 1.8, the ``TEMPLATE_CONTEXT_PROCESSORS`` is deprecated, set the ``'context_processors'`` option in the ``'OPTIONS'`` of a DjangoTemplates backend instead:
+NB: since Django version 1.8, the ``TEMPLATE_CONTEXT_PROCESSORS`` is deprecated, set the ``'context_processors'`` option
+in the ``'OPTIONS'`` of a DjangoTemplates backend instead:
 
 .. code-block:: python
 
@@ -71,7 +79,8 @@ NB: since Django version 1.8, the ``TEMPLATE_CONTEXT_PROCESSORS`` is deprecated,
     ]
 
 
-You can then enable the authentication classes for Django REST Framework by default or per view (add or update the ``REST_FRAMEWORK`` and ``AUTHENTICATION_BACKENDS`` entries in your settings.py)
+You can then enable the authentication classes for Django REST Framework by default or per view (add or update the
+``REST_FRAMEWORK`` and ``AUTHENTICATION_BACKENDS`` entries in your settings.py)
 
 .. code-block:: python
 
@@ -81,7 +90,7 @@ You can then enable the authentication classes for Django REST Framework by defa
             ...
             # 'oauth2_provider.ext.rest_framework.OAuth2Authentication',  # django-oauth-toolkit < 1.0.0
             'oauth2_provider.contrib.rest_framework.OAuth2Authentication',  # django-oauth-toolkit >= 1.0.0
-            'rest_framework_social_oauth2.authentication.SocialAuthentication',
+            'drf_social_oauth2.authentication.SocialAuthentication',
         ),
     }
 
@@ -89,7 +98,7 @@ You can then enable the authentication classes for Django REST Framework by defa
 
     AUTHENTICATION_BACKENDS = (
         ...
-       'rest_framework_social_oauth2.backends.DjangoOAuth2',
+       'drf_social_oauth2.backends.DjangoOAuth2',
        'django.contrib.auth.backends.ModelBackend',
     )
 
@@ -113,7 +122,10 @@ Go to Django admin and add a new Application with the following configuration:
 
 The installation is done, you can now test the newly configured application.
 
-It is recommended that you read the docs from `python-social-auth` and `django-oauth-toolkit` if you would like to go further. If you want to enable a social backend (e.g. Facebook), check the docs of `python-social-auth` on `supported backends <http://python-social-auth.readthedocs.io/en/latest/backends/index.html#supported-backends>`_ and `django-social-auth` on `backend configuration <http://python-social-auth.readthedocs.io/en/latest/configuration/django.html>`_.
+It is recommended that you read the docs from `python-social-auth` and `django-oauth-toolkit` if you would like to go
+further. If you want to enable a social backend (e.g. Facebook), check the docs of `python-social-auth` on
+`supported backends <http://python-social-auth.readthedocs.io/en/latest/backends/index.html#supported-backends>`_
+and `django-social-auth` on `backend configuration <http://python-social-auth.readthedocs.io/en/latest/configuration/django.html>`_.
 
 
 Testing the Setup
@@ -136,7 +148,8 @@ We will assume for the following examples that the REST API is reachable on ``ht
 
     curl -X POST -d "grant_type=convert_token&client_id=<client_id>&client_secret=<client_secret>&backend=<backend>&token=<backend_token>" http://localhost:8000/auth/convert-token
 
-``<backend>`` here needs to be replaced by the name of an enabled backend (e.g. "Facebook"). Note that ``PROPRIETARY_BACKEND_NAME`` is a valid backend name, but there is no use to do that here.
+``<backend>`` here needs to be replaced by the name of an enabled backend (e.g. "Facebook"). Note that ``PROPRIETARY_BACKEND_NAME``
+is a valid backend name, but there is no use to do that here.
 ``<backend_token>`` is for the token you got from the service utilizing an iOS app for example.
 
 - Revoke tokens:
@@ -156,7 +169,9 @@ Authenticating Requests
 As you have probably noticed, we enabled a default authentication backend called ``SocialAuthentication``.
 This backend lets you register and authenticate your users seamlessly with your REST API.
 
-The class simply retrieves the backend name and token from the Authorization header and tries to authenticate the user using the corresponding external provider. If the user was not yet registered on your app, it will automatically create a new user for this purpose.
+The class simply retrieves the backend name and token from the Authorization header and tries to authenticate the user
+using the corresponding external provider. If the user was not yet registered on your app, it will automatically create
+a new user for this purpose.
 
 Example authenticated request::
 
@@ -199,7 +214,7 @@ For each authentication provider, the top portion of your REST API settings.py f
             # OAuth
             # 'oauth2_provider.ext.rest_framework.OAuth2Authentication',  # django-oauth-toolkit < 1.0.0
             'oauth2_provider.contrib.rest_framework.OAuth2Authentication',  # django-oauth-toolkit >= 1.0.0
-            'rest_framework_social_oauth2.authentication.SocialAuthentication',
+            'drf_social_oauth2.authentication.SocialAuthentication',
         )
     }
 
@@ -221,8 +236,8 @@ To use Facebook as the authorization backend of your REST API, your settings.py 
         'social_core.backends.facebook.FacebookAppOAuth2',
         'social_core.backends.facebook.FacebookOAuth2',
 
-        # django-rest-framework-social-oauth2
-        'rest_framework_social_oauth2.backends.DjangoOAuth2',
+        # drf_social_oauth2
+        'drf_social_oauth2.backends.DjangoOAuth2',
 
         # Django
         'django.contrib.auth.backends.ModelBackend',
@@ -245,13 +260,18 @@ You can test these settings by running the following command::
 
     curl -X POST -d "grant_type=convert_token&client_id=<client_id>&client_secret=<client_secret>&backend=facebook&token=<facebook_token>" http://localhost:8000/auth/convert-token
 
-This request returns the "access_token" that you should use with every HTTP request to your REST API. What is happening here is that we are converting a third-party access token (``<user_access_token>``) to an access token to use with your API and its clients ("access_token"). You should use this token on each and further communications between your system/application and your api to authenticate each request and avoid authenticating with Facebook every time.
+This request returns the "access_token" that you should use with every HTTP request to your REST API. What is happening
+here is that we are converting a third-party access token (``<user_access_token>``) to an access token to use with your
+API and its clients ("access_token"). You should use this token on each and further communications between your
+system/application and your api to authenticate each request and avoid authenticating with Facebook every time.
 
-You can get the ID (``SOCIAL_AUTH_FACEBOOK_KEY``) and secret (``SOCIAL_AUTH_FACEBOOK_SECRET``) of your app at https://developers.facebook.com/apps/.
+You can get the ID (``SOCIAL_AUTH_FACEBOOK_KEY``) and secret (``SOCIAL_AUTH_FACEBOOK_SECRET``) of your app at
+https://developers.facebook.com/apps/.
 
 For testing purposes, you can use the access token ``<user_access_token>`` from https://developers.facebook.com/tools/accesstoken/.
 
-For more information on how to configure python-social-auth with Facebook visit http://python-social-auth.readthedocs.io/en/latest/backends/facebook.html.
+For more information on how to configure python-social-auth with Facebook visit
+http://python-social-auth.readthedocs.io/en/latest/backends/facebook.html.
 
 
 Google Example
@@ -268,8 +288,8 @@ To use Google OAuth2 as the authorization backend of your REST API, your setting
 	# Google OAuth2
 	'social_core.backends.google.GoogleOAuth2',
 
-        # django-rest-framework-social-oauth2
-        'rest_framework_social_oauth2.backends.DjangoOAuth2',
+        # drf-social-oauth2
+        'drf_social_oauth2.backends.DjangoOAuth2',
 
         # Django
         'django.contrib.auth.backends.ModelBackend',
@@ -291,11 +311,18 @@ You can test these settings by running the following command::
 
     curl -X POST -d "grant_type=convert_token&client_id=<django-oauth-generated-client_id>&client_secret=<django-oauth-generated-client_secret>&backend=google-oauth2&token=<google_token>" http://localhost:8000/auth/convert-token
 
-This request returns an "access_token" that you should use with every HTTP requests to your REST API. What is happening here is that we are converting a third-party access token (``<user_access_token>``) to an access token to use with your API and its clients ("access_token"). You should use this token on each and further communications between your system/application and your API to authenticate each request and avoid authenticating with Google every time.
+This request returns an "access_token" that you should use with every HTTP requests to your REST API.
+What is happening here is that we are converting a third-party access token (``<user_access_token>``)
+to an access token to use with your API and its clients ("access_token"). You should use this token on
+each and further communications between your system/application and your API to authenticate each request
+and avoid authenticating with Google every time.
 
-You can get the ID (``SOCIAL_AUTH_GOOGLE_OAUTH2_KEY``) and secret (``SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET``) of your app at https://console.developers.google.com/apis/credentials
+You can get the ID (``SOCIAL_AUTH_GOOGLE_OAUTH2_KEY``) and secret (``SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET``)
+of your app at https://console.developers.google.com/apis/credentials
 and more information on how to create one on https://developers.google.com/identity/protocols/OAuth2.
 
-For testing purposes, you can use the access token ``<user_access_token>`` from https://developers.google.com/oauthplayground/.
+For testing purposes, you can use the access token ``<user_access_token>`` from
+https://developers.google.com/oauthplayground/.
 
-For more information on how to configure python-social-auth with Google visit https://python-social-auth.readthedocs.io/en/latest/backends/google.html#google-oauth2.
+For more information on how to configure python-social-auth with Google visit
+https://python-social-auth.readthedocs.io/en/latest/backends/google.html#google-oauth2.
