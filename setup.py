@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 import sys
 
 if sys.version_info < (3, 5):
-    raise SystemError("This package is for Python 3.5 and above.")
+    raise SystemError('This package is for Python 3.5 and above.')
 
 setup(
     name='drf-social-oauth2',
@@ -15,13 +15,13 @@ setup(
     license='MIT',
     packages=find_packages(),
     classifiers=[
-        "Development Status :: 4 - Beta",
-        "Environment :: Web Environment",
-        "Framework :: Django",
-        "License :: OSI Approved :: MIT License",
-        "Programming Language :: Python :: 3",
-        "Topic :: Internet :: WWW/HTTP",
-        "Topic :: Software Development :: Libraries :: Python Modules",
+        'Development Status :: 4 - Beta',
+        'Environment :: Web Environment',
+        'Framework :: Django',
+        'License :: OSI Approved :: MIT License',
+        'Programming Language :: Python :: 3',
+        'Topic :: Internet :: WWW/HTTP',
+        'Topic :: Software Development :: Libraries :: Python Modules',
     ],
     install_requires=[
         'djangorestframework>=3.10.3',

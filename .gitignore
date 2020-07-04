@@ -71,7 +71,7 @@ target/
 .Trashes
 
 ### Linux ###
-.*
+.idea
 !.gitignore
 *~
 
