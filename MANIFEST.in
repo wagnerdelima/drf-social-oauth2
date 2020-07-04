@@ -1,0 +1,4 @@
+include MANIFEST.in
+include LICENSE.txt
+include README.rst
+include CHANGELOG.rst
