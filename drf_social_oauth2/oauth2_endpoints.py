@@ -7,7 +7,7 @@ from oauthlib.oauth2.rfc6749.endpoints.token import TokenEndpoint
 from oauthlib.oauth2.rfc6749.tokens import BearerToken
 from oauthlib.oauth2.rfc6749.endpoints.base import catch_errors_and_unavailability
 
-from .oauth2_grants import SocialTokenGrant
+from drf_social_oauth2.oauth2_grants import SocialTokenGrant
 
 log = logging.getLogger(__name__)
 
