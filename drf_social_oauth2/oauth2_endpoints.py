@@ -18,8 +18,14 @@ class SocialTokenServer(TokenEndpoint):
     Use this with the KeepRequestCore backend class.
     """
 
-    def __init__(self, request_validator, token_generator=None,
-                 token_expires_in=None, refresh_token_generator=None, **kwargs):
+    def __init__(
+        self,
+        request_validator,
+        token_generator=None,
+        token_expires_in=None,
+        refresh_token_generator=None,
+        **kwargs
+    ):
         """Construct a client credentials grant server.
         :param request_validator: An implementation of
                                   oauthlib.oauth2.RequestValidator.
@@ -34,22 +40,25 @@ class SocialTokenServer(TokenEndpoint):
         """
         self._params = {}
         refresh_grant = SocialTokenGrant(request_validator)
-        bearer = BearerToken(request_validator, token_generator,
-                             token_expires_in, refresh_token_generator)
-        TokenEndpoint.__init__(self, default_grant_type='convert_token',
-                               grant_types={
-                                   'convert_token': refresh_grant,
-                               },
-                               default_token_type=bearer)
+        bearer = BearerToken(
+            request_validator,
+            token_generator,
+            token_expires_in,
+            refresh_token_generator,
+        )
+        TokenEndpoint.__init__(
+            self,
+            default_grant_type='convert_token',
+            grant_types={'convert_token': refresh_grant,},
+            default_token_type=bearer,
+        )
 
     def set_request_object(self, request):
         """This should be called by the KeepRequestCore backend class before
         calling `create_token_response` to store the Django request object.
         """
         if not isinstance(request, HttpRequest):
-            raise TypeError(
-                "request must be an instance of 'django.http.HttpRequest'"
-            )
+            raise TypeError("request must be an instance of 'django.http.HttpRequest'")
         self._params['http_request'] = request
 
     def pop_request_object(self):
@@ -60,20 +69,25 @@ class SocialTokenServer(TokenEndpoint):
 
     # We override this method just so we can pass the django request object
     @catch_errors_and_unavailability
-    def create_token_response(self, uri, http_method='GET', body=None,
-                              headers=None, credentials=None):
+    def create_token_response(
+        self, uri, http_method='GET', body=None, headers=None, credentials=None
+    ):
         """Extract grant_type and route to the designated handler."""
-        request = Request(
-            uri, http_method=http_method, body=body, headers=headers)
+        request = Request(uri, http_method=http_method, body=body, headers=headers)
         request.scopes = None
         request.extra_credentials = credentials
 
         # Make sure we consume the django request object
         request.django_request = self.pop_request_object()
 
-        grant_type_handler = self.grant_types.get(request.grant_type,
-                                                  self.default_grant_type_handler)
-        log.debug('Dispatching grant_type %s request to %r.',
-                  request.grant_type, grant_type_handler)
+        grant_type_handler = self.grant_types.get(
+            request.grant_type, self.default_grant_type_handler
+        )
+        log.debug(
+            'Dispatching grant_type %s request to %r.',
+            request.grant_type,
+            grant_type_handler,
+        )
         return grant_type_handler.create_token_response(
-            request, self.default_token_type)
+            request, self.default_token_type
+        )

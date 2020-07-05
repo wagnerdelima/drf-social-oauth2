@@ -17,9 +17,7 @@ class KeepRequestCore(oauth2_settings.OAUTH2_BACKEND_CLASS):
     def __init__(self, *args, **kwargs):
         super(KeepRequestCore, self).__init__(*args, **kwargs)
         if not isinstance(self.server, SocialTokenServer):
-            raise TypeError(
-                "server_class must be an instance of 'SocialTokenServer'"
-            )
+            raise TypeError("server_class must be an instance of 'SocialTokenServer'")
 
     def create_token_response(self, request):
         """

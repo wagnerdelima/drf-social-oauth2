@@ -42,15 +42,15 @@ class SocialTokenGrant(RefreshTokenGrant):
         # It should contain the social token to be used with the backend
         if request.token is None:
             raise errors.InvalidRequestError(
-                description='Missing token parameter.',
-                request=request)
+                description='Missing token parameter.', request=request
+            )
 
         # We check that a backend parameter is present.
         # It should contain the name of the social backend to be used
         if request.backend is None:
             raise errors.InvalidRequestError(
-                description='Missing backend parameter.',
-                request=request)
+                description='Missing backend parameter.', request=request
+            )
 
         if not request.client_id:
             raise errors.MissingClientIdError(request=request)
@@ -64,7 +64,9 @@ class SocialTokenGrant(RefreshTokenGrant):
             if not self.request_validator.authenticate_client(request):
                 log.debug('Invalid client (%r), denying access.', request)
                 raise errors.InvalidClientError(request=request)
-        elif not self.request_validator.authenticate_client_id(request.client_id, request):
+        elif not self.request_validator.authenticate_client_id(
+            request.client_id, request
+        ):
             log.debug('Client authentication failed, %r.', request)
             raise errors.InvalidClientError(request=request)
 
@@ -81,28 +83,38 @@ class SocialTokenGrant(RefreshTokenGrant):
         strategy = load_strategy(request=request.django_request)
 
         try:
-            backend = load_backend(strategy, request.backend,
-                                   reverse("%s:%s:complete" % (DRFSO2_URL_NAMESPACE, NAMESPACE) , args=(request.backend,)))
+            backend = load_backend(
+                strategy,
+                request.backend,
+                reverse(
+                    "%s:%s:complete" % (DRFSO2_URL_NAMESPACE, NAMESPACE),
+                    args=(request.backend,),
+                ),
+            )
         except MissingBackend:
             raise errors.InvalidRequestError(
-                description='Invalid backend parameter.',
-                request=request)
+                description='Invalid backend parameter.', request=request
+            )
 
         try:
             user = backend.do_auth(access_token=request.token)
         except requests.HTTPError as e:
             raise errors.InvalidRequestError(
-                description="Backend responded with HTTP{0}: {1}.".format(e.response.status_code,
-                                                                          e.response.text),
-                request=request)
+                description="Backend responded with HTTP{0}: {1}.".format(
+                    e.response.status_code, e.response.text
+                ),
+                request=request,
+            )
         except SocialAuthBaseException as e:
             raise errors.AccessDeniedError(description=str(e), request=request)
 
         if not user:
-            raise errors.InvalidGrantError('Invalid credentials given.', request=request)
+            raise errors.InvalidGrantError(
+                'Invalid credentials given.', request=request
+            )
 
         if not user.is_active:
             raise errors.InvalidGrantError('User inactive or deleted.', request=request)
-        
+
         request.user = user
         log.debug('Authorizing access to user %r.', request.user)
