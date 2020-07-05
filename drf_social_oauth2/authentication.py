@@ -64,19 +64,16 @@ class SocialAuthentication(BaseAuthentication):
                     args=(backend,),
                 ),
             )
+
+            user = backend.do_auth(access_token=token)
         except MissingBackend:
             message = 'Invalid token header. Invalid backend.'
             raise AuthenticationFailed(message)
-
-        try:
-            user = backend.do_auth(access_token=token)
         except requests.HTTPError as e:
-            message = e.response.text
-            raise AuthenticationFailed(message)
+            raise AuthenticationFailed(e.response.text)
 
         if not user:
-            message = 'Bad credentials.'
-            raise AuthenticationFailed(message)
+            raise AuthenticationFailed('Bad credentials')
         return user, token
 
     def authenticate_header(self, request):
