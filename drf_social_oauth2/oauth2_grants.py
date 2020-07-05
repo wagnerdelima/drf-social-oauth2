@@ -13,7 +13,7 @@ from social_django.utils import load_backend, load_strategy
 from social_core.exceptions import MissingBackend, SocialAuthBaseException
 from social_core.utils import requests
 
-from .settings import DRFSO2_URL_NAMESPACE
+from drf_social_oauth2.settings import DRFSO2_URL_NAMESPACE
 
 
 log = logging.getLogger(__name__)

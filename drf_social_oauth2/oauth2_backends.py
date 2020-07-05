@@ -1,7 +1,6 @@
-from oauth2_provider.oauth2_backends import OAuthLibCore
 from oauth2_provider.settings import oauth2_settings
 
-from .oauth2_endpoints import SocialTokenServer
+from drf_social_oauth2.oauth2_endpoints import SocialTokenServer
 
 
 class KeepRequestCore(oauth2_settings.OAUTH2_BACKEND_CLASS):

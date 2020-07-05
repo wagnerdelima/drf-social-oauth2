@@ -21,8 +21,8 @@ from rest_framework.decorators import (
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .oauth2_backends import KeepRequestCore
-from .oauth2_endpoints import SocialTokenServer
+from drf_social_oauth2.oauth2_backends import KeepRequestCore
+from drf_social_oauth2.oauth2_endpoints import SocialTokenServer
 
 
 class CsrfExemptMixin(object):
