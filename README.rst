@@ -1,11 +1,8 @@
-Not Published at PyPI Yet
-=========================
-
 DRF Social OAuth2
 ===================================
 
-.. image:: https://badge.fury.io/py/django-rest-framework-social-oauth2.svg
-    :target: http://badge.fury.io/py/django-rest-framework-social-oauth2
+.. image:: https://badge.fury.io/py/drf-social-oauth2.svg
+    :target: https://badge.fury.io/for/py/drf-social-oauth2
 
 This module provides OAuth2 social authentication support for applications in Django REST Framework.
 
