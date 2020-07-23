@@ -19,9 +19,8 @@ If you have some hard time understanding OAuth2, you can read a simple explanati
 Installation
 ------------
 
-Once this framework is published at the PyPI, install it with pip::
+This framework is published at the PyPI, install it with pip::
 
-    # it's not yet published
     pip install drf_social_oauth2
 
 
