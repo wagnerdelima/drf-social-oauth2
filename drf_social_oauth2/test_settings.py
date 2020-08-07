@@ -19,3 +19,5 @@ INSTALLED_APPS = [
 DRFSO2_PROPRIETARY_BACKEND_NAME = 'Django'
 
 DRFSO2_URL_NAMESPACE = 'drf'
+
+ROOT_URLCONF = 'drf_social_oauth2.urls'
