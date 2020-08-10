@@ -57,12 +57,7 @@ class SocialAuthentication(BaseAuthentication):
 
         try:
             backend = load_backend(
-                strategy,
-                backend,
-                reverse(
-                    "%s:%s:complete" % (DRFSO2_URL_NAMESPACE, NAMESPACE),
-                    args=(backend,),
-                ),
+                strategy, backend, reverse(f'{NAMESPACE}:complete', args=(backend,)),
             )
 
             user = backend.do_auth(access_token=token)
