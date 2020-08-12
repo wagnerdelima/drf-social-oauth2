@@ -186,7 +186,7 @@ For each authentication provider, the top portion of your REST API settings.py f
         # OAuth
         'oauth2_provider',
         'social_django',
-        'rest_framework_social_oauth2',
+        'drf_social_oauth2',
     )
 
     TEMPLATES = [
