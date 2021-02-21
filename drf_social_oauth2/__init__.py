@@ -1,9 +1,6 @@
 """python-social-auth and oauth2 support for django-rest-framework"""
 __version__ = '1.0.9'
 
-from jose import jwt
-from oauthlib.common import Request
-
 try:
     from secrets import SystemRandom
 except ImportError:
@@ -15,7 +12,7 @@ UNICODE_ASCII_CHARACTER_SET = (
 )
 
 
-def generate_token(request: Request, length=30, chars=UNICODE_ASCII_CHARACTER_SET):
+def generate_token(request, length=30, chars=UNICODE_ASCII_CHARACTER_SET):
     """Generates a non-guessable OAuth Json Web Token
     OAuth (1 and 2) does not specify the format of tokens except that they
     should be strings of random characters. Tokens should not be guessable
@@ -23,6 +20,7 @@ def generate_token(request: Request, length=30, chars=UNICODE_ASCII_CHARACTER_SE
     why SystemRandom is used instead of the default random.choice method.
     """
     from django.conf import settings
+    from jose import jwt
 
     rand = SystemRandom()
     secret = getattr(settings, 'SECRET_KEY')
