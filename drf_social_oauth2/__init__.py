@@ -1,8 +1,6 @@
 """python-social-auth and oauth2 support for django-rest-framework"""
 __version__ = '1.0.9'
 
-from django.conf import settings
-
 from jose import jwt
 from oauthlib.common import Request
 
@@ -24,6 +22,8 @@ def generate_token(request: Request, length=30, chars=UNICODE_ASCII_CHARACTER_SE
     and entropy when generating the random characters is important. Which is
     why SystemRandom is used instead of the default random.choice method.
     """
+    from django.conf import settings
+
     rand = SystemRandom()
     secret = getattr(settings, 'SECRET_KEY')
 
