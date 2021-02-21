@@ -1,6 +1,12 @@
 Change log
 ==========
 
+1.0.9 - 20201-02-21
+------------------
+
+- Add general README info.
+- JWT token provided through toggle.
+
 1.0.6 - 2017-05-22
 ------------------
 

@@ -39,10 +39,11 @@ Add the following to your ``INSTALLED_APPS``:
 Include social auth urls to your urls.py:
 
 .. code-block:: python
+    from django.conf.urls import url
 
     urlpatterns = patterns(
         ...
-        (r'^auth/', include('drf_social_oauth2.urls', namespace='drf')),
+        url(r'^auth/', include('drf_social_oauth2.urls', namespace='drf')),
     )
 
 
@@ -103,6 +104,7 @@ The settings of this  app are:
 
 - ``DRFSO2_PROPRIETARY_BACKEND_NAME``: name of your OAuth2 social backend (e.g ``"Facebook"``), defaults to ``"Django"``
 - ``DRFSO2_URL_NAMESPACE``: namespace for reversing URLs
+- ``ACTIVATE_JWT``: If set to True the access and refresh tokens will be JWTed. Default is False.
 
 Setting Up a New Application
 ----------------------------

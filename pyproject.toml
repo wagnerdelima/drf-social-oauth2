@@ -1,6 +1,10 @@
 [tool.black]
 include = '\.pyi?$'
 skip-string-normalization = true
+requires = [
+    'python-jose[cryptography]>=3.2.0',
+    'python-secrets>=3.9.2',
+]
 exclude = '''
 /(
     \.git
