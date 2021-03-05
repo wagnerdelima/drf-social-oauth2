@@ -41,7 +41,7 @@ Include social auth urls to your urls.py:
 .. code-block:: python
     urlpatterns = patterns(
         ...
-        (r'^auth/', include('drf_social_oauth2.urls')),
+        url(r'^auth/', include('drf_social_oauth2.urls')),
     )
 
 
