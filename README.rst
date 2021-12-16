@@ -44,9 +44,19 @@ Include social auth urls to your urls.py:
 
     urlpatterns = patterns(
         ...
-        url(r'^auth/', include('drf_social_oauth2.urls', namespace='drf')),
+        url(r'^auth/', include('drf_social_oauth2.urls', namespace='drf'))
     )
 
+For versions of Django 4.0 or higher, use:
+
+.. code-block:: python
+
+    from django.urls import re_path
+
+    urlpatterns = patterns(
+        ...
+        re_path(r'^auth/', include('drf_social_oauth2.urls', namespace='drf'))
+    )
 
 Add these context processors to your ``TEMPLATE_CONTEXT_PROCESSORS``:
 
