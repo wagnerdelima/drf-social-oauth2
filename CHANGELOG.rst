@@ -1,7 +1,27 @@
 Change log
 ==========
 
-1.0.9 - 20201-02-21
+1.1.1 - 2021-12-17
+------------------
+
+## What's Changed
+- chore: add fixed version 1.1.1. by @wagnerdelima in https://github.com/wagnerdelima/drf-social-oauth2/pull/83
+
+
+1.1.0 - 2021-12-16
+------------------
+
+## What's Changed
+- Fix readme file by @zubrzubr in https://github.com/wagnerdelima/drf-social-oauth2/pull/43
+- Reference the User model with get_user_model() by @bmpenuelas in https://github.com/wagnerdelima/drf-social-oauth2/pull/46
+- Feat/django 4 support by @wagnerdelima in https://github.com/wagnerdelima/drf-social-oauth2/pull/82
+
+## New Contributors
+- @zubrzubr made their first contribution in https://github.com/wagnerdelima/drf-social-oauth2/pull/43
+- @bmpenuelas made their first contribution in https://github.com/wagnerdelima/drf-social-oauth2/pull/46
+
+
+1.0.9 - 2021-02-21
 ------------------
 
 - Add general README info.
