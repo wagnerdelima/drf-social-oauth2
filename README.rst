@@ -335,3 +335,20 @@ https://developers.google.com/oauthplayground/.
 
 For more information on how to configure python-social-auth with Google visit
 https://python-social-auth.readthedocs.io/en/latest/backends/google.html#google-oauth2.
+
+
+Running local tests
+^^^^^^^^^^^^^^^^^^^
+
+You may find drf-social-oauth2's unit tests in the tests/ directory. In order to run the tests locally, you can either
+use pytest directly or coverage itself. Prior to running the test cases you need to install the local dependencies by:
+
+    $ pip3 install -r requirements.tests.txt
+
+Then you can just run pytest in your terminal:
+
+    $ pytest
+
+or call coverage to get the most updated test coverage:
+
+    $ coverage run --source='.' -m pytest && coverage html
