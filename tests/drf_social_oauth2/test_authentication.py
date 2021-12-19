@@ -1,7 +1,9 @@
 import os
 
+from requests.exceptions import HTTPError
+from requests.models import Response
 from rest_framework.exceptions import AuthenticationFailed
-import pytest
+from pytest import raises
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'drf_social_oauth2.test_settings')
 
@@ -16,6 +18,7 @@ from drf_social_oauth2.authentication import SocialAuthentication
 def create_request(content: str = 'Bearer'):
     request = HttpRequest()
     request.META = {'HTTP_AUTHORIZATION': content}
+    request.session = None
     return request
 
 
@@ -28,7 +31,7 @@ def test_authenticate_no_backend_fail():
     request = create_request('Bearer')
     authenticated = SocialAuthentication()
 
-    with pytest.raises(AuthenticationFailed):
+    with raises(AuthenticationFailed):
         authenticated.authenticate(request)
 
 
@@ -36,7 +39,7 @@ def test_authenticate_empty_bearer_fail():
     request = create_request('Bearer facebook')
     authenticated = SocialAuthentication()
 
-    with pytest.raises(AuthenticationFailed):
+    with raises(AuthenticationFailed):
         authenticated.authenticate(request)
 
 
@@ -45,7 +48,7 @@ def test_authenticate_wrongly_formatted_token_fail():
     request = create_request(token)
     authenticated = SocialAuthentication()
 
-    with pytest.raises(AuthenticationFailed):
+    with raises(AuthenticationFailed):
         authenticated.authenticate(request)
 
 
@@ -61,3 +64,12 @@ def test_authenticate(mocker):
     user, token = authenticated.authenticate(request)
     assert user
     assert token
+
+
+def test_authenticate_missing_backend():
+    token = 'Bearer unknown 401f7ac837da42b97f613d789819ff93537bee6a'
+    request = create_request(token)
+
+    authenticated = SocialAuthentication()
+    with raises(AuthenticationFailed):
+        authenticated.authenticate(request)
