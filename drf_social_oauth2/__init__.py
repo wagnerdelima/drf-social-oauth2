@@ -1,5 +1,5 @@
 """python-social-auth and oauth2 support for django-rest-framework"""
-__version__ = '1.1.2'
+__version__ = '1.1.3'
 
 try:
     from secrets import SystemRandom
