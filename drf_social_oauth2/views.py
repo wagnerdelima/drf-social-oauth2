@@ -157,7 +157,7 @@ class DisconnectBackendView(APIView):
 
     permission_classes = (permissions.IsAuthenticated,)
 
-    def get_object(self, queryset=None):
+    def get_object(self):
         return self.request.user
 
     def post(self, request, *args, **kwargs):
