@@ -1,6 +1,13 @@
 Change log
 ==========
 
+1.1.2 - 2021-12-19
+------------------
+
+## What's Changed
+*Increase test coverage by @wagnerdelima in https://github.com/wagnerdelima/drf-social-oauth2/pull/84
+
+
 1.1.1 - 2021-12-17
 ------------------
 

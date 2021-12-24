@@ -1,9 +1,13 @@
 try:
     from django.conf.urls import url, include
+
 except ImportError:
     from django.urls import re_path, include
 
+from django.urls import path
+
 from oauth2_provider.views import AuthorizationView
+from social_django.views import complete
 
 from drf_social_oauth2.views import (
     ConvertTokenView,
@@ -15,8 +19,11 @@ from drf_social_oauth2.views import (
 
 app_name = 'drfso2'
 
+
+urlpatterns = [path('complete/<str:backend>/', complete, name='complete')]
+
 try:
-    urlpatterns = [
+    urlpatterns += [
         url(r'^authorize/?$', AuthorizationView.as_view(), name='authorize'),
         url(r'^token/?$', TokenView.as_view(), name='token'),
         url('', include('social_django.urls', namespace='social')),
@@ -32,7 +39,7 @@ try:
         ),
     ]
 except NameError:
-    urlpatterns = [
+    urlpatterns += [
         re_path(r'^authorize/?$', AuthorizationView.as_view(), name='authorize'),
         re_path(r'^token/?$', TokenView.as_view(), name='token'),
         re_path('', include('social_django.urls', namespace='social')),

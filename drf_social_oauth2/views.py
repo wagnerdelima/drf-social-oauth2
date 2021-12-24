@@ -5,7 +5,6 @@ from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from social_core.exceptions import MissingBackend
 from social_django.utils import load_strategy, load_backend
-from social_django.views import NAMESPACE
 
 from oauth2_provider.contrib.rest_framework import OAuth2Authentication
 from oauth2_provider.models import Application, AccessToken
@@ -158,7 +157,7 @@ class DisconnectBackendView(APIView):
 
     permission_classes = (permissions.IsAuthenticated,)
 
-    def get_object(self, queryset=None):
+    def get_object(self):
         return self.request.user
 
     def post(self, request, *args, **kwargs):
@@ -178,8 +177,9 @@ class DisconnectBackendView(APIView):
 
         strategy = load_strategy(request=request)
         try:
+            namespace = 'drf'
             backend = load_backend(
-                strategy, backend, reverse(NAMESPACE + ":complete", args=(backend,))
+                strategy, backend, reverse(namespace + ":complete", args=(backend,))
             )
         except MissingBackend:
             return Response(
