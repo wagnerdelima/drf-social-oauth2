@@ -352,3 +352,17 @@ Then you can just run pytest in your terminal:
 or call coverage to get the most updated test coverage:
 
     $ coverage run --source='.' -m pytest && coverage html
+
+
+Customize token expiration
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+You can set the expiry time for tokens as follows:
+
+.. code-block:: python
+
+    # in your settings.py file.
+    from oauth2_provider import settings as oauth2_settings
+
+    # expires in 6 months
+    oauth2_settings.DEFAULTS['ACCESS_TOKEN_EXPIRE_SECONDS'] = 1.577e7
