@@ -6,12 +6,12 @@ DRF Social OAuth2
 
 Buy Me A Coffee
 ^^^^^^^^^^^^^^^
-If you liked the project and would like to share a small contribution, please buy me a coffee or be a GutHub Sponsor:
+If you liked the project and would like to share a small contribution, please buy me a coffee:
 
 .. image:: https://cdn.buymeacoffee.com/buttons/v2/default-green.png
     :alt: Buy Me A Coffee
     :height: 60
-    :width: 150
+    :width: 270
     :align: center
     :target: https://www.buymeacoffee.com/wagnerdelima
 
