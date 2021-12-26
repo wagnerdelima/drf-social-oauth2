@@ -16,6 +16,9 @@ If you liked the project and would like to share a small contribution, please bu
     :target: https://www.buymeacoffee.com/wagnerdelima
 
 
+Introduction
+^^^^^^^^^^^^
+
 This module provides OAuth2 social authentication support for applications in Django REST Framework.
 
 The aim of this package is to help set up social authentication for your REST API. It also helps setting up your OAuth2
