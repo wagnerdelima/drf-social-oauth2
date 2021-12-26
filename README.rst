@@ -1,10 +1,20 @@
 DRF Social OAuth2
 ===================================
 
-<a href="https://www.buymeacoffee.com/wagnerdelima" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-green.png" alt="Buy Me A Coffee" style="height: 60px !important;width: 217px !important;" ></a>
-
 .. image:: https://badge.fury.io/py/drf-social-oauth2.svg
     :target: https://badge.fury.io/for/py/drf-social-oauth2
+
+Buy Me A Coffee
+^^^^^^^^^^^^^^^
+If you liked the project and would like to share a small contribution, please buy me a coffee or be a GutHub Sponsor:
+
+.. image:: https://cdn.buymeacoffee.com/buttons/v2/default-green.png
+    :alt: Buy Me A Coffee
+    :height: 60
+    :width: 150
+    :align: center
+    :target: https://www.buymeacoffee.com/wagnerdelima
+
 
 This module provides OAuth2 social authentication support for applications in Django REST Framework.
 
