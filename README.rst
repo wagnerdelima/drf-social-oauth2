@@ -1,6 +1,8 @@
 DRF Social OAuth2
 ===================================
 
+<a href="https://www.buymeacoffee.com/wagnerdelima" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-green.png" alt="Buy Me A Coffee" style="height: 60px !important;width: 217px !important;" ></a>
+
 .. image:: https://badge.fury.io/py/drf-social-oauth2.svg
     :target: https://badge.fury.io/for/py/drf-social-oauth2
 
