@@ -4,6 +4,21 @@ DRF Social OAuth2
 .. image:: https://badge.fury.io/py/drf-social-oauth2.svg
     :target: https://badge.fury.io/for/py/drf-social-oauth2
 
+Buy Me A Coffee
+^^^^^^^^^^^^^^^
+If you liked the project and would like to share a small contribution, please buy me a coffee:
+
+.. image:: https://cdn.buymeacoffee.com/buttons/v2/default-green.png
+    :alt: Buy Me A Coffee
+    :height: 60
+    :width: 270
+    :align: center
+    :target: https://www.buymeacoffee.com/wagnerdelima
+
+
+Introduction
+^^^^^^^^^^^^
+
 This module provides OAuth2 social authentication support for applications in Django REST Framework.
 
 The aim of this package is to help set up social authentication for your REST API. It also helps setting up your OAuth2
