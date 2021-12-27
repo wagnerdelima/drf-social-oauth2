@@ -30,6 +30,11 @@ You should probably read their docs if you were to go further than what is done 
 If you have some hard time understanding OAuth2, you can read a simple explanation
 `here <https://aaronparecki.com/articles/2012/07/29/1/oauth2-simplified>`_.
 
+If you would like to test out this framework but you do not want to spend time at setting it up
+in your local environment, you can visit my `facebook_setup <https://github.com/wagnerdelima/facebook_setup>`_ repo.
+It contains all the configuration necessary for you to try. It's missing database configuration, however
+all you have to do is set up a database in the settings.py file. The facebook API client ID and client secret
+are also included, so don't worry.
 
 Installation
 ------------
