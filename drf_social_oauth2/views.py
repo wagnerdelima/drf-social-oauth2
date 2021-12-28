@@ -128,6 +128,10 @@ class RevokeTokenView(CsrfExemptMixin, OAuthLibMixin, APIView):
 @authentication_classes([OAuth2Authentication])
 @permission_classes([permissions.IsAuthenticated])
 def invalidate_sessions(request):
+    """
+    Delete all access tokens associated with a client id.
+    """
+
     client_id = request.data.get("client_id", None)
     if client_id is None:
         return Response(
