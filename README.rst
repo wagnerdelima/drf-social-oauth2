@@ -386,3 +386,14 @@ You can set the expiry time for tokens as follows:
 
     # expires in 6 months
     oauth2_settings.DEFAULTS['ACCESS_TOKEN_EXPIRE_SECONDS'] = 1.577e7
+
+
+What Am I Working Next?
+^^^^^^^^^^^^^^^^^^^^^^^
+
+I will be working on the issues below. Anyone is welcome to contribute.
+
+- `Add OAS for endpoints <https://github.com/wagnerdelima/drf-social-oauth2/issues/91>`_
+- `Prevent token recreation if they are still valid <https://github.com/wagnerdelima/drf-social-oauth2/issues/93>`_
+- `Dockerize test execution <https://github.com/wagnerdelima/drf-social-oauth2/issues/88>`_
+- `Add CI/CD for tests <https://github.com/wagnerdelima/drf-social-oauth2/issues/89>`_
