@@ -1,0 +1,271 @@
+openapi: "3.0.3"
+
+info:
+  title: DRF Social Oauth2 API Definitions
+  version: "1.1.3"
+
+servers:
+  - url: http://127.0.0.1:8000
+
+paths:
+
+  /auth/convert-token/:
+
+    post:
+      summary: Creates a new authentication token.
+      tags:
+        - Tokens
+      requestBody:
+        description: Body of the convert token request.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ConvertToken'
+      responses:
+        200:
+          description: Valid convert token response.
+          $ref: '#/components/responses/ConvertToken'
+        400:
+          description: Bad request if grant_type is not passed.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Error raised by request.
+                    example: "unsupported_grant_type"
+
+  /auth/revoke-token:
+
+    post:
+      summary: Revokes one specific token.
+      tags:
+        - Tokens
+      requestBody:
+        description: Body of the revoke token request.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RevokeToken'
+      responses:
+        204:
+          description: Valid revoke token response.
+          content:
+            application/json:
+              schema:
+                type: string
+                example: ""
+        400:
+          description: Bad request if token is not passed.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Error raised by request.
+                    example: "invalid_request"
+                  error_description:
+                    type: string
+                    description: Message raised by request.
+                    example: "Missing token parameter"
+        401:
+          description: Unauthorized if client id and/or client secret is/are not passed.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Error raised by request.
+                    example: "invalid_client"
+
+
+  /auth/invalidate-sessions:
+
+    post:
+      summary: Delete all access tokens associated with a client id.
+      tags:
+        - Tokens
+      requestBody:
+        description: Body of the invalidate session request.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InvalidateSessions'
+      responses:
+        204:
+          description: Valid invalidate sessions response.
+          content:
+            application/json:
+              schema:
+                type: string
+                example: ""
+        400:
+          description: Missing client_id field response.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  client_id:
+                    type: string
+                    default: "This field is required."
+
+
+  /auth/disconnect-backend:
+
+    post:
+      summary: An endpoint for disconnect social auth backend providers, such as Facebook.
+      tags:
+        - Backends
+      requestBody:
+        description: Body of the disconnect backend request.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DisconnectBackend'
+      responses:
+        204:
+          description: Valid disconnect backend response.
+          content:
+            application/json:
+              schema:
+                type: string
+                example: ""
+        400:
+          description: Missing backend field response.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  backend:
+                    type: string
+                    default: "This field is required."
+
+components:
+
+  schemas:
+
+    ConvertToken:
+      description: The definition of a Convert Token request.
+      required:
+        - grant_type
+        - client_id
+        - client_secret
+        - backend
+        - token
+      properties:
+        grant_type:
+          description: The type of the token.
+          type: string
+          example: "convert_token"
+        client_id:
+          description: The client id created at Application level in the Django Admin Dashboard.
+          type: string
+          example: "4P1BfkLBGUaHZNLjgHMJOChwuFC7C22bmHVVkmo"
+        client_secret:
+          description: The client secret created at Application level in the Django Admin Dashboard.
+          type: string
+          example: "lxgUAsfHVZztbBXmD9vnssazOM7fp17BV7C3noHh5kMnHkPRLXQ8Bg9ljnANxo2PiF4jSVmJZRynlP5LDsLvt0746QfNof8suw5fdMMNeSOnSrYHM40RzgdCxFQEqtCd"
+        backend:
+          description: The backend you are authenticating against.
+          type: string
+          example: "facebook"
+        token:
+          description: |
+            The Access Token generated by the API of the backend. For instance, if you are authenticating with Facebook,
+            go to Facebook For Developers  - Graph API Explorer and create an access token for you.
+          type: string
+          example: "EAAxWEZCUZCn7ABAC7Mpo3IP9s3nd2zKMkZAOQOfg5CQfBhiU2DWRZCcZCeDypH12m5GTMHZAmYSUeULnIbZBJZBQMzZC4nndgx
+          jQXunDfRGy1zmAxRy7fT5F8Y50CuYDZAH6Gwq5iBQdltF8C0GRZBrJXGTZBiW6ztrvqLq62NEpLEZAWZAMNW3JF6T2U7108ZBWB4
+          VcDYtF7AxaSlhtwZDZD"
+
+
+    RevokeToken:
+      description: The definition of a Revoke Token request.
+      required:
+        - client_id
+        - client_secret
+        - token
+      properties:
+        client_id:
+          description: The client id created at Application level in the Django Admin Dashboard.
+          type: string
+          example: "4P1BfkLBGUaHZNLjgHMJOChwuFC7C22bmHVVkmo"
+        client_secret:
+          description: The client secret created at Application level in the Django Admin Dashboard.
+          type: string
+          example: "lxgUAsfHVZztbBXmD9vnssazOM7fp17BV7C3noHh5kMnHkPRLXQ8Bg9ljnANxo2PiF4jSVmJZRynlP5LDsLvt0746QfNof8suw5fdMMNeSOnSrYHM40RzgdCxFQEqtCd"
+        token:
+          description: |
+            The token generated by a successful response to the convert-token endpoint. The token may be
+            JWTed or not.
+          type: string
+          example: "fQZFFAtcmDZ3iYmUfYfuRRH8PYpR7Y"
+
+
+    DisconnectBackend:
+      description: The definition of a Disconnect Backend request.
+      required:
+        - backend
+        - association_id
+      properties:
+        backend:
+          description: The backend you authenticated against.
+          type: string
+          example: "facebook"
+        association_id:
+          description: The association id you created.
+          type: string
+          example: "association id"
+
+    InvalidateSessions:
+      description: The definition of a Invalidate Sessions.
+      required:
+        - client_id
+      properties:
+        client_id:
+          description: The client id created at Application level in the Django Admin Dashboard.
+          type: string
+          example: "4P1BfkLBGUaHZNLjgHMJOChwuFC7C22bmHVVkmo"
+
+  responses:
+
+    ConvertToken:
+      description: Convert Token successfull response.
+      content:
+        application/json:
+          schema:
+            properties:
+              access_token:
+                description: The newly created access token.
+                type: string
+                example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbiI6InFkOEpua3JpSHUydFJyMVZDemRRYzJ3dHlybTdYaiJ9.6Pu8qKJJk73vjAFg-d8HFwo6RMRBvgo1d_XirwWMdpI"
+              expires_in:
+                description: A timestamp in seconds of the validity of the access token.
+                type: integer
+                format: int64
+                example: 36000
+              token_type:
+                description: The type of token gererated.
+                type: string
+                example: "Bearer"
+              scope:
+                description: The permissions given to the token, read, write etc.
+                type: string
+                example: "read, write"
+              refresh_token:
+                description: |
+                  The refresh token created by the convert-token. Refresh tokens can be used to renew an access token.
+                type: string
+                example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbiI6Im1zT3R0cUhDM0JLVmVzSU5wR1hoS2p6bTJvWGZ4ZSJ9.p-5oohVV2Oeg4dsmX2g6pNiDXamR4-oaPEzK4Ki1fZQ"
