@@ -1,6 +1,13 @@
 Change log
 ==========
 
+1.1.3 - 2021-12-24
+
+## What's Changed
+* docs: add expiry info for access tokens. by @wagnerdelima in https://github.com/wagnerdelima/drf-social-oauth2/pull/86
+* Feat/disconnect backend by @wagnerdelima in https://github.com/wagnerdelima/drf-social-oauth2/pull/87
+
+
 1.1.2 - 2021-12-19
 ------------------
 
