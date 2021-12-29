@@ -1,7 +1,5 @@
 import os
 
-from requests.exceptions import HTTPError
-from requests.models import Response
 from rest_framework.exceptions import AuthenticationFailed
 from pytest import raises
 

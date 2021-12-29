@@ -1,0 +1,16 @@
+version: "3.7"
+
+services:
+  app:
+    build: .
+    command: >
+      bash -c "sh components.sh && pytest"
+    depends_on:
+      - db
+  db:
+    image: postgres:13.2
+    restart: always
+    environment:
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_USER=user
+      - POSTGRES_DB=database
