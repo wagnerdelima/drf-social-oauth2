@@ -387,6 +387,19 @@ You can set the expiry time for tokens as follows:
     # expires in 6 months
     oauth2_settings.DEFAULTS['ACCESS_TOKEN_EXPIRE_SECONDS'] = 1.577e7
 
+Run Swagger Editor
+^^^^^^^^^^^^^^^^^^
+
+Run the Swagger Editor's and interact with the API:
+
+On Mac and Linux:
+
+    $ docker run --rm -p 8080:8080 -v $(pwd):/tmp -e SWAGGER_FILE=/tmp/api.yaml swaggerapi/swagger-editor
+
+On Windows:
+
+    $ docker run --rm -p 8080:8080 -v ${pwd}:/tmp -e SWAGGER_FILE=/tmp/api.yaml swaggerapi/swagger-editor
+
 
 What Am I Working Next?
 ^^^^^^^^^^^^^^^^^^^^^^^
