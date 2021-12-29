@@ -38,9 +38,6 @@ paths:
                     description: Error raised by request.
                     example: "unsupported_grant_type"
 
-
-
-
   /auth/revoke-token:
 
     post:
@@ -104,16 +101,23 @@ paths:
             schema:
               $ref: '#/components/schemas/InvalidateSessions'
       responses:
-        200:
-          description: Valid response of the invalidate sessions response.
+        204:
+          description: Valid invalidate sessions response.
+          content:
+            application/json:
+              schema:
+                type: string
+                example: ""
+        400:
+          description: Missing client_id field response.
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  message:
+                  client_id:
                     type: string
-                    description: The success message.
+                    default: "This field is required."
 
 
   /auth/disconnect-backend:
@@ -130,16 +134,23 @@ paths:
             schema:
               $ref: '#/components/schemas/DisconnectBackend'
       responses:
-        200:
+        204:
           description: Valid disconnect backend response.
+          content:
+            application/json:
+              schema:
+                type: string
+                example: ""
+        400:
+          description: Missing backend field response.
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  message:
+                  backend:
                     type: string
-                    description: The success message.
+                    default: "This field is required."
 
 components:
 
