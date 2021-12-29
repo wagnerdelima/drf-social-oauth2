@@ -25,14 +25,21 @@ paths:
       responses:
         200:
           description: Valid convert token response.
+          $ref: '#/components/responses/ConvertToken'
+        400:
+          description: Bad request if grant_type is not passed.
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  message:
+                  error:
                     type: string
-                    description: The success message.
+                    description: Error raised by request.
+                    example: "unsupported_grant_type"
+
+
+
 
   /auth/revoke-token:
 
@@ -48,16 +55,40 @@ paths:
             schema:
               $ref: '#/components/schemas/RevokeToken'
       responses:
-        200:
+        204:
           description: Valid revoke token response.
+          content:
+            application/json:
+              schema:
+                type: string
+                example: ""
+        400:
+          description: Bad request if token is not passed.
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  message:
+                  error:
                     type: string
-                    description: The success message.
+                    description: Error raised by request.
+                    example: "invalid_request"
+                  error_description:
+                    type: string
+                    description: Message raised by request.
+                    example: "Missing token parameter"
+        401:
+          description: Unauthorized if client id and/or client secret is/are not passed.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Error raised by request.
+                    example: "invalid_client"
+
 
   /auth/invalidate-sessions:
 
@@ -196,3 +227,34 @@ components:
           description: The client id created at Application level in the Django Admin Dashboard.
           type: string
           example: "4P1BfkLBGUaHZNLjgHMJOChwuFC7C22bmHVVkmo"
+
+  responses:
+
+    ConvertToken:
+      description: Convert Token successfull response.
+      content:
+        application/json:
+          schema:
+            properties:
+              access_token:
+                description: The newly created access token.
+                type: string
+                example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbiI6InFkOEpua3JpSHUydFJyMVZDemRRYzJ3dHlybTdYaiJ9.6Pu8qKJJk73vjAFg-d8HFwo6RMRBvgo1d_XirwWMdpI"
+              expires_in:
+                description: A timestamp in seconds of the validity of the access token.
+                type: integer
+                format: int64
+                example: 36000
+              token_type:
+                description: The type of token gererated.
+                type: string
+                example: "Bearer"
+              scope:
+                description: The permissions given to the token, read, write etc.
+                type: string
+                example: "read, write"
+              refresh_token:
+                description: |
+                  The refresh token created by the convert-token. Refresh tokens can be used to renew an access token.
+                type: string
+                example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbiI6Im1zT3R0cUhDM0JLVmVzSU5wR1hoS2p6bTJvWGZ4ZSJ9.p-5oohVV2Oeg4dsmX2g6pNiDXamR4-oaPEzK4Ki1fZQ"
