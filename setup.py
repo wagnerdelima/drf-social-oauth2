@@ -27,6 +27,7 @@ setup(
         'djangorestframework>=3.10.3',
         'django-oauth-toolkit>=0.12.0',
         'social-auth-app-django>=3.1.0',
+        'python-jose[cryptography]>=3.2.0',
     ],
     include_package_data=True,
     zip_safe=False,
