@@ -4,6 +4,10 @@ DRF Social OAuth2
 .. image:: https://badge.fury.io/py/drf-social-oauth2.svg
     :target: https://badge.fury.io/for/py/drf-social-oauth2
 
+.. image:: https://www.codefactor.io/repository/github/wagnerdelima/drf-social-oauth2/badge
+    :target: https://www.codefactor.io/repository/github/wagnerdelima/drf-social-oauth2/badge
+
+
 Buy Me A Coffee
 ^^^^^^^^^^^^^^^
 If you liked the project and would like to share a small contribution, please buy me a coffee:
