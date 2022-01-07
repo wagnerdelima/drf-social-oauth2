@@ -1,7 +1,19 @@
 Change log
 ==========
 
+1.1.4 - 2021-12-29
+------------------
+
+## What's Changed
+* Add buy me a coffee button by @wagnerdelima in https://github.com/wagnerdelima/drf-social-oauth2/pull/94
+* docs: add facebook sample repo. by @wagnerdelima in https://github.com/wagnerdelima/drf-social-oauth2/pull/95
+* Add CI/CD for running tests by @wagnerdelima in https://github.com/wagnerdelima/drf-social-oauth2/pull/97
+* docs: open api specification. by @wagnerdelima in https://github.com/wagnerdelima/drf-social-oauth2/pull/96
+* chore: new release and CHANGELOGS updated. . 🚀 by @wagnerdelima in https://github.com/wagnerdelima/drf-social-oauth2/pull/98
+
+
 1.1.3 - 2021-12-24
+------------------
 
 ## What's Changed
 * docs: add expiry info for access tokens. by @wagnerdelima in https://github.com/wagnerdelima/drf-social-oauth2/pull/86
