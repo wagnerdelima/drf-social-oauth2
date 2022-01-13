@@ -4,7 +4,7 @@ services:
   app:
     build: .
     command: >
-      bash -c "sh components.sh && pytest"
+      bash -c "sh components.sh && python manage_test.py migrate && pytest"
     depends_on:
       - db
   db:
