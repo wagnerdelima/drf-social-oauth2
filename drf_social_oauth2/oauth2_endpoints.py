@@ -1,7 +1,6 @@
 import logging
 from json import dumps
-from datetime import datetime
-from datetime import timezone
+from datetime import datetime, timezone
 
 from django.http import HttpRequest
 from oauth2_provider.models import get_access_token_model
@@ -19,8 +18,8 @@ AccessToken = get_access_token_model()
 
 
 class SocialTokenServer(TokenEndpoint):
-    """An endpoint used only for token generation.
-
+    """
+    An endpoint used only for token generation.
     Use this with the KeepRequestCore backend class.
     """
 
@@ -92,6 +91,9 @@ class SocialTokenServer(TokenEndpoint):
             grant_type_handler,
         )
 
+        # validates request and assigns user to request object.
+        SocialTokenGrant(self.request_validator).validate_token_request(request)
+
         access_token = self.__check_for_no_existing_tokens(request)
         # Checks if the last token created exists, and if so, if token is still valid.
         if access_token is None or (access_token and access_token.is_expired()):
@@ -119,7 +121,6 @@ class SocialTokenServer(TokenEndpoint):
         """
         Checks if the last token created.
         """
-        SocialTokenGrant(self.request_validator).validate_token_request(request)
         return AccessToken.objects.filter(
             user=request.user, application=request.client,
         ).last()
@@ -131,7 +132,7 @@ class SocialTokenServer(TokenEndpoint):
         Assembles a request and assigns django_request to Request object.
         """
         request = Request(uri, http_method=http_method, body=body, headers=headers)
-        request.scopes = None
+        request.scopes = ['read', 'write']
         request.extra_credentials = credentials
         # Make sure we consume the django request object
         request.django_request = self.pop_request_object()
