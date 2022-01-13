@@ -12,8 +12,6 @@ from social_django.utils import load_backend, load_strategy
 from social_core.exceptions import MissingBackend
 from social_core.utils import requests
 
-from drf_social_oauth2.settings import DRFSO2_URL_NAMESPACE
-
 
 class SocialAuthentication(BaseAuthentication):
     """
