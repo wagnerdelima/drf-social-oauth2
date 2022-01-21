@@ -1,6 +1,17 @@
 Change log
 ==========
 
+1.2.0 - 2022-01-14
+------------------
+
+## What's Changed
+* Add missing python-jose dependency by @denizdogan in https://github.com/wagnerdelima/drf-social-oauth2/pull/100
+* Create FUNDING.yml by @wagnerdelima in https://github.com/wagnerdelima/drf-social-oauth2/pull/102
+* feat: prevent access tokens from being recreated by @wagnerdelima in https://github.com/wagnerdelima/drf-social-oauth2/pull/103
+
+## New Contributors
+* @denizdogan made their first contribution in https://github.com/wagnerdelima/drf-social-oauth2/pull/100
+
 1.1.4 - 2021-12-29
 ------------------
 
