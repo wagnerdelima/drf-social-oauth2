@@ -1,8 +1,8 @@
 import logging
 from json import dumps
-from datetime import datetime, timezone
 
 from django.http import HttpRequest
+from django.utils import timezone
 from oauth2_provider.models import get_access_token_model
 
 from oauthlib.common import Request
@@ -109,7 +109,7 @@ class SocialTokenServer(TokenEndpoint):
         token = {
             'access_token': access_token.token,
             'expires_in': (
-                access_token.expires - datetime.now(tz=timezone.utc)
+                access_token.expires - timezone.now()
             ).total_seconds(),
             'scope': access_token.scope,
             'refresh_token': access_token.refresh_token.token,
