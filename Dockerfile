@@ -1,4 +1,4 @@
-FROM python:3.9.4-slim-buster
+FROM python:3.11.0a5-slim-buster
 ENV PYTHONUNBUFFERED 1
 
 RUN mkdir /code
