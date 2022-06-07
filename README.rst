@@ -8,18 +8,6 @@ DRF Social OAuth2
     :target: https://www.codefactor.io/repository/github/wagnerdelima/drf-social-oauth2/badge
 
 
-Buy Me A Coffee
-^^^^^^^^^^^^^^^
-If you liked the project and would like to share a small contribution, please buy me a coffee:
-
-.. image:: https://cdn.buymeacoffee.com/buttons/v2/default-green.png
-    :alt: Buy Me A Coffee
-    :height: 60
-    :width: 270
-    :align: center
-    :target: https://www.buymeacoffee.com/wagnerdelima
-
-
 Introduction
 ^^^^^^^^^^^^
 
@@ -37,8 +25,7 @@ If you have some hard time understanding OAuth2, you can read a simple explanati
 If you would like to test out this framework but you do not want to spend time at setting it up
 in your local environment, you can visit my `facebook_setup <https://github.com/wagnerdelima/facebook_setup>`_ repo.
 It contains all the configuration necessary for you to try. It's missing database configuration, however
-all you have to do is set up a database in the settings.py file. The facebook API client ID and client secret
-are also included, so don't worry.
+all you have to do is set up a database in the settings.py file.
 
 Installation
 ------------
