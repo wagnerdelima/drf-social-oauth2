@@ -410,8 +410,4 @@ What Am I Working Next?
 
 I will be working on the issues below. Anyone is welcome to contribute.
 
-- `Add OAS for endpoints <https://github.com/wagnerdelima/drf-social-oauth2/issues/91>`_
-- `Prevent token recreation if they are still valid <https://github.com/wagnerdelima/drf-social-oauth2/issues/93>`_
-   - There is currently a Draft PR I opened in the django-oauth-toolkit: `<https://github.com/jazzband/django-oauth-toolkit/pull/1058>`_
-- `Dockerize test execution <https://github.com/wagnerdelima/drf-social-oauth2/issues/88>`_
-- `Add CI/CD for tests <https://github.com/wagnerdelima/drf-social-oauth2/issues/89>`_
+    - Investigating Issues.
