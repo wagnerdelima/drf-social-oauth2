@@ -341,8 +341,21 @@ You can get the ID (``SOCIAL_AUTH_GOOGLE_OAUTH2_KEY``) and secret (``SOCIAL_AUTH
 of your app at https://console.developers.google.com/apis/credentials
 and more information on how to create one on https://developers.google.com/identity/protocols/OAuth2.
 
+In the Google API Credential, create a new "Oauth Client ID". Once it's created, Google will show you a Client ID and
+a Client Secret. Use the Client ID at ``SOCIAL_AUTH_GOOGLE_OAUTH2_KEY``, and the Client Secret at
+``SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET``.
+
 For testing purposes, you can use the access token ``<user_access_token>`` from
 https://developers.google.com/oauthplayground/.
+
+    1. Visit the OAuth 2.0 Playground
+    2. Select Google OAuth2 API v2 and authorize for https://www.googleapis.com/auth/userinfo.email and
+https://www.googleapis.com/auth/userinfo.profile
+    3. Exchange Authorization code for tokens and get access token
+    4. Use the access token as the token parameter in the /convert-token endpoint.
+
+If you would like a step-by-step tutorial, see this link, by @djangokatya:
+https://djangokatya.com/2021/04/09/social-login-for-django-rest-framefork-for-newbies-a-k-a-for-me/
 
 For more information on how to configure python-social-auth with Google visit
 https://python-social-auth.readthedocs.io/en/latest/backends/google.html#google-oauth2.
