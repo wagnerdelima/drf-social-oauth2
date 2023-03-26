@@ -2,7 +2,7 @@
 python-social-auth and oauth2 support for django-rest-framework.
 drf-social-oauth2 makes it easy to integrate Django social authentication with major OAuth2 providers, i.e., Facebook, Twitter, Google, etc.
 """
-__version__ = '1.2.1'
+__version__ = '1.2.2'
 
 try:
     from secrets import SystemRandom
