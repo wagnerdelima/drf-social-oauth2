@@ -12,3 +12,7 @@ if hasattr(settings, 'ACTIVATE_JWT') and getattr(settings, 'ACTIVATE_JWT'):
     oauth2_settings.DEFAULTS[
         'ACCESS_TOKEN_GENERATOR'
     ] = 'drf_social_oauth2.generate_token'
+
+    oauth2_settings.DEFAULTS[
+        'REFRESH_TOKEN_GENERATOR'
+    ] = 'drf_social_oauth2.generate_token'
