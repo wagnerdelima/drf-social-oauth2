@@ -367,7 +367,7 @@ Running local tests
 You may find drf-social-oauth2's unit tests in the tests/ directory. In order to run the tests locally, you can either
 use pytest directly or coverage itself. Prior to running the test cases you need to install the local dependencies by:
 
-    $ pip3 install -r requirements.tests.txt
+    $ pip3 install -r requirements.test.txt
 
 Then you can just run pytest in your terminal:
 
