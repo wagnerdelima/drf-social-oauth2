@@ -304,13 +304,10 @@ To use Google OAuth2 as the authorization backend of your REST API, your setting
     AUTHENTICATION_BACKENDS = (
         # Others auth providers (e.g. Facebook, OpenId, etc)
         ...
-
-	# Google OAuth2
-	'social_core.backends.google.GoogleOAuth2',
-
+        # Google  OAuth2
+        'social_core.backends.google.GoogleOAuth2',
         # drf-social-oauth2
         'drf_social_oauth2.backends.DjangoOAuth2',
-
         # Django
         'django.contrib.auth.backends.ModelBackend',
     )
@@ -360,6 +357,40 @@ https://djangokatya.com/2021/04/09/social-login-for-django-rest-framefork-for-ne
 For more information on how to configure python-social-auth with Google visit
 https://python-social-auth.readthedocs.io/en/latest/backends/google.html#google-oauth2.
 
+
+GitHub Example
+^^^^^^^^^^^^^^
+
+.. code-block:: python
+
+    AUTHENTICATION_BACKENDS = (
+        # Others auth providers (e.g. Facebook, OpenId, etc)
+        ...
+
+        # GitHub OAuth2
+        'social_core.backends.github.GithubOAuth2',
+
+        # drf-social-oauth2
+        'drf_social_oauth2.backends.DjangoOAuth2',
+
+        # Django
+        'django.contrib.auth.backends.ModelBackend',
+    )
+
+    # Google configuration
+    SOCIAL_AUTH_GITHUB_KEY = <your app id goes here>
+    SOCIAL_AUTH_GITHUB_SECRET = <your app secret goes here>
+
+Remember to add the new Application in your Django admin (see section "Setting up Application"), just for GitHub.
+
+You need to register a new GitHub app at https://github.com/settings/applications/new. set the callback URL to
+http://example.com/complete/github/ replacing example.com with your domain.
+
+The Client ID should be added on SOCIAL_AUTH_GITHUB_KEY and the ``SOCIAL_AUTH_GITHUB_KEY`` should be added on
+``SOCIAL_AUTH_GITHUB_SECRET``.
+
+Now, visit https://github.com/settings/tokens and create a new token. Select the user checkbox, as to grant user access.
+The click on the Generate Token button. Use the access token as the token parameter in the /convert-token endpoint.
 
 Running local tests
 ^^^^^^^^^^^^^^^^^^^
