@@ -10,7 +10,6 @@ setup()
 
 from django.contrib.auth.models import User
 from django.db import IntegrityError
-from django.utils import timezone
 
 from oauth2_provider.models import Application, AccessToken, RefreshToken
 from pytest import fixture
@@ -29,7 +28,10 @@ def user():
             username='user', email='test@email.com', password='password'
         )
     except IntegrityError:
-        user = User.objects.get(username='user', email='test@email.com',)
+        user = User.objects.get(
+            username='user',
+            email='test@email.com',
+        )
 
     yield user
     del user
@@ -52,7 +54,9 @@ def save(token, request):
     u = User.objects.get(email='test@email.com')
     app = Application.objects.get(user=u.id)
     re_token = RefreshToken.objects.create(
-        user=u, token=token['refresh_token'], application=app,
+        user=u,
+        token=token['refresh_token'],
+        application=app,
     )
     ac_token = AccessToken.objects.create(
         user=u,
@@ -86,7 +90,8 @@ def test_create_social_token(mocker, user, application):
     backend.return_value.do_auth.return_value = user
 
     social = SocialTokenServer(
-        request_validator=request_validator, token_generator=generate_token,
+        request_validator=request_validator,
+        token_generator=generate_token,
     )
 
     uri = '/auth/convert-token/?grant_type=convert_token&backend=facebook&client_id=code&client_secret=code&token=token'
@@ -108,7 +113,8 @@ def test_reuse_social_token(mocker, user, application):
     backend.return_value.do_auth.return_value = user
 
     social = SocialTokenServer(
-        request_validator=request_validator, token_generator=generate_token,
+        request_validator=request_validator,
+        token_generator=generate_token,
     )
 
     uri = (
@@ -138,7 +144,8 @@ def test_social_token_expired(mocker, user, application):
     backend.return_value.do_auth.return_value = user
 
     social = SocialTokenServer(
-        request_validator=request_validator, token_generator=generate_token,
+        request_validator=request_validator,
+        token_generator=generate_token,
     )
 
     uri = (
