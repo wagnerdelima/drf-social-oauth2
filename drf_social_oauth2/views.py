@@ -1,8 +1,9 @@
-import json
+from json import loads as json_loads
 
 from django.urls import reverse
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
+
 from social_core.exceptions import MissingBackend
 from social_django.utils import load_strategy, load_backend
 
@@ -10,21 +11,25 @@ from oauth2_provider.contrib.rest_framework import OAuth2Authentication
 from oauth2_provider.models import Application, AccessToken
 from oauth2_provider.settings import oauth2_settings
 from oauth2_provider.views.mixins import OAuthLibMixin
-from rest_framework import permissions
-from rest_framework import status
+
+from rest_framework import (
+    permissions,
+    status,
+)
 from rest_framework.decorators import (
     api_view,
     authentication_classes,
     permission_classes,
 )
 from rest_framework.response import Response
+from rest_framework.request import Request
 from rest_framework.views import APIView
 
 from drf_social_oauth2.oauth2_backends import KeepRequestCore
 from drf_social_oauth2.oauth2_endpoints import SocialTokenServer
 
 
-class CsrfExemptMixin(object):
+class CsrfExemptMixin:
     """
     Exempts the view from CSRF requirements.
     NOTE:
@@ -52,16 +57,24 @@ class TokenView(CsrfExemptMixin, OAuthLibMixin, APIView):
     oauthlib_backend_class = oauth2_settings.OAUTH2_BACKEND_CLASS
     permission_classes = (permissions.AllowAny,)
 
-    def post(self, request, *args, **kwargs):
+    def post(self, request: Request, *args, **kwargs):
         # Use the rest framework `.data` to fake the post body of the django request.
         mutable_data = request.data.copy()
         request._request.POST = request._request.POST.copy()
         for key, value in mutable_data.items():
             request._request.POST[key] = value
 
-        url, headers, body, status = self.create_token_response(request._request)
-        response = Response(data=json.loads(body), status=status)
+        try:
+            url, headers, body, status = self.create_token_response(request._request)
+        except AccessToken.DoesNotExist:
+            return Response(
+                data={
+                    'invalid_grant': 'The access token of your Refresh Token does not exist.'
+                },
+                status=400,
+            )
 
+        response = Response(data=json_loads(body), status=status)
         for k, v in headers.items():
             response[k] = v
         return response
@@ -82,7 +95,7 @@ class ConvertTokenView(CsrfExemptMixin, OAuthLibMixin, APIView):
     oauthlib_backend_class = KeepRequestCore
     permission_classes = (permissions.AllowAny,)
 
-    def post(self, request, *args, **kwargs):
+    def post(self, request: Request, *args, **kwargs):
         # Use the rest framework `.data` to fake the post body of the django request.
         mutable_data = request.data.copy()
         request._request.POST = request._request.POST.copy()
@@ -90,7 +103,7 @@ class ConvertTokenView(CsrfExemptMixin, OAuthLibMixin, APIView):
             request._request.POST[key] = value
 
         url, headers, body, status = self.create_token_response(request._request)
-        response = Response(data=json.loads(body), status=status)
+        response = Response(data=json_loads(body), status=status)
 
         for k, v in headers.items():
             response[k] = v
@@ -107,7 +120,7 @@ class RevokeTokenView(CsrfExemptMixin, OAuthLibMixin, APIView):
     oauthlib_backend_class = oauth2_settings.OAUTH2_BACKEND_CLASS
     permission_classes = (permissions.AllowAny,)
 
-    def post(self, request, *args, **kwargs):
+    def post(self, request: Request, *args, **kwargs):
         # Use the rest framework `.data` to fake the post body of the django request.
         mutable_data = request.data.copy()
         request._request.POST = request._request.POST.copy()
@@ -116,7 +129,7 @@ class RevokeTokenView(CsrfExemptMixin, OAuthLibMixin, APIView):
 
         url, headers, body, status = self.create_revocation_response(request._request)
         response = Response(
-            data=json.loads(body) if body else '', status=status if body else 204
+            data=json_loads(body) if body else '', status=status if body else 204
         )
 
         for k, v in headers.items():
@@ -141,6 +154,7 @@ def invalidate_sessions(request):
 
     try:
         app = Application.objects.get(client_id=client_id)
+        AccessToken.objects.filter(user=request.user, application=app).delete()
     except Application.DoesNotExist:
         return Response(
             {
@@ -149,8 +163,6 @@ def invalidate_sessions(request):
             status=status.HTTP_400_BAD_REQUEST,
         )
 
-    tokens = AccessToken.objects.filter(user=request.user, application=app)
-    tokens.delete()
     return Response({}, status=status.HTTP_204_NO_CONTENT)
 
 
@@ -164,7 +176,7 @@ class DisconnectBackendView(APIView):
     def get_object(self):
         return self.request.user
 
-    def post(self, request, *args, **kwargs):
+    def post(self, request: Request, *args, **kwargs):
         backend = request.data.get("backend", None)
         if backend is None:
             return Response(
