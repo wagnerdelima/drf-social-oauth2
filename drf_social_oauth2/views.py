@@ -12,10 +12,8 @@ from oauth2_provider.models import Application, AccessToken
 from oauth2_provider.settings import oauth2_settings
 from oauth2_provider.views.mixins import OAuthLibMixin
 
-from rest_framework import (
-    permissions,
-    status,
-)
+from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.status import HTTP_204_NO_CONTENT, HTTP_400_BAD_REQUEST
 from rest_framework.decorators import (
     api_view,
     authentication_classes,
@@ -55,7 +53,7 @@ class TokenView(CsrfExemptMixin, OAuthLibMixin, APIView):
     server_class = oauth2_settings.OAUTH2_SERVER_CLASS
     validator_class = oauth2_settings.OAUTH2_VALIDATOR_CLASS
     oauthlib_backend_class = oauth2_settings.OAUTH2_BACKEND_CLASS
-    permission_classes = (permissions.AllowAny,)
+    permission_classes = (AllowAny,)
 
     def post(self, request: Request, *args, **kwargs):
         # Use the rest framework `.data` to fake the post body of the django request.
