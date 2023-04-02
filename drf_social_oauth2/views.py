@@ -11,6 +11,7 @@ from oauth2_provider.contrib.rest_framework import OAuth2Authentication
 from oauth2_provider.models import Application, AccessToken, RefreshToken
 from oauth2_provider.settings import oauth2_settings
 from oauth2_provider.views.mixins import OAuthLibMixin
+from oauthlib.oauth2.rfc6749.errors import InvalidClientError, AccessDeniedError
 
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.status import HTTP_204_NO_CONTENT, HTTP_400_BAD_REQUEST
@@ -101,7 +102,19 @@ class ConvertTokenView(CsrfExemptMixin, OAuthLibMixin, APIView):
         for key, value in mutable_data.items():
             request._request.POST[key] = value
 
-        url, headers, body, status = self.create_token_response(request._request)
+        try:
+            url, headers, body, status = self.create_token_response(request._request)
+        except InvalidClientError:
+            return Response(
+                data={'invalid_client': 'client_id or client_secret is invalid.'},
+                status=HTTP_400_BAD_REQUEST,
+            )
+        except AccessDeniedError:
+            return Response(
+                {'access_denied': f'The token you provided is invalid or expired.'},
+                status=HTTP_400_BAD_REQUEST,
+            )
+
         response = Response(data=json_loads(body), status=status)
 
         for k, v in headers.items():
