@@ -15,6 +15,7 @@ from drf_social_oauth2.views import (
     RevokeTokenView,
     invalidate_sessions,
     DisconnectBackendView,
+    InvalidateRefreshTokens,
 )
 
 app_name = 'drfso2'
@@ -33,6 +34,11 @@ try:
             r'^invalidate-sessions/?$', invalidate_sessions, name='invalidate_sessions'
         ),
         url(
+            r'invalidate-refresh-tokens/?$',
+            InvalidateRefreshTokens.as_view(),
+            name='invalidate_refresh_tokens',
+        ),
+        url(
             r'^disconnect-backend/?$',
             DisconnectBackendView.as_view(),
             name='disconnect_backend',
@@ -47,6 +53,11 @@ except NameError:
         re_path(r'^revoke-token/?$', RevokeTokenView.as_view(), name='revoke_token'),
         re_path(
             r'^invalidate-sessions/?$', invalidate_sessions, name='invalidate_sessions'
+        ),
+        re_path(
+            r'invalidate-refresh-tokens/?$',
+            InvalidateRefreshTokens.as_view(),
+            name='invalidate_refresh_tokens',
         ),
         re_path(
             r'^disconnect-backend/?$',

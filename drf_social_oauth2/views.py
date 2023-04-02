@@ -8,14 +8,12 @@ from social_core.exceptions import MissingBackend
 from social_django.utils import load_strategy, load_backend
 
 from oauth2_provider.contrib.rest_framework import OAuth2Authentication
-from oauth2_provider.models import Application, AccessToken
+from oauth2_provider.models import Application, AccessToken, RefreshToken
 from oauth2_provider.settings import oauth2_settings
 from oauth2_provider.views.mixins import OAuthLibMixin
 
-from rest_framework import (
-    permissions,
-    status,
-)
+from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.status import HTTP_204_NO_CONTENT, HTTP_400_BAD_REQUEST
 from rest_framework.decorators import (
     api_view,
     authentication_classes,
@@ -25,6 +23,7 @@ from rest_framework.response import Response
 from rest_framework.request import Request
 from rest_framework.views import APIView
 
+from drf_social_oauth2.serializers import InvalidateRefreshTokenSerializer
 from drf_social_oauth2.oauth2_backends import KeepRequestCore
 from drf_social_oauth2.oauth2_endpoints import SocialTokenServer
 
@@ -55,7 +54,7 @@ class TokenView(CsrfExemptMixin, OAuthLibMixin, APIView):
     server_class = oauth2_settings.OAUTH2_SERVER_CLASS
     validator_class = oauth2_settings.OAUTH2_VALIDATOR_CLASS
     oauthlib_backend_class = oauth2_settings.OAUTH2_BACKEND_CLASS
-    permission_classes = (permissions.AllowAny,)
+    permission_classes = (AllowAny,)
 
     def post(self, request: Request, *args, **kwargs):
         # Use the rest framework `.data` to fake the post body of the django request.
@@ -71,7 +70,7 @@ class TokenView(CsrfExemptMixin, OAuthLibMixin, APIView):
                 data={
                     'invalid_grant': 'The access token of your Refresh Token does not exist.'
                 },
-                status=400,
+                status=HTTP_400_BAD_REQUEST,
             )
 
         response = Response(data=json_loads(body), status=status)
@@ -93,7 +92,7 @@ class ConvertTokenView(CsrfExemptMixin, OAuthLibMixin, APIView):
     server_class = SocialTokenServer
     validator_class = oauth2_settings.OAUTH2_VALIDATOR_CLASS
     oauthlib_backend_class = KeepRequestCore
-    permission_classes = (permissions.AllowAny,)
+    permission_classes = (AllowAny,)
 
     def post(self, request: Request, *args, **kwargs):
         # Use the rest framework `.data` to fake the post body of the django request.
@@ -118,7 +117,7 @@ class RevokeTokenView(CsrfExemptMixin, OAuthLibMixin, APIView):
     server_class = oauth2_settings.OAUTH2_SERVER_CLASS
     validator_class = oauth2_settings.OAUTH2_VALIDATOR_CLASS
     oauthlib_backend_class = oauth2_settings.OAUTH2_BACKEND_CLASS
-    permission_classes = (permissions.AllowAny,)
+    permission_classes = (AllowAny,)
 
     def post(self, request: Request, *args, **kwargs):
         # Use the rest framework `.data` to fake the post body of the django request.
@@ -139,7 +138,7 @@ class RevokeTokenView(CsrfExemptMixin, OAuthLibMixin, APIView):
 
 @api_view(['POST'])
 @authentication_classes([OAuth2Authentication])
-@permission_classes([permissions.IsAuthenticated])
+@permission_classes([IsAuthenticated])
 def invalidate_sessions(request):
     """
     Delete all access tokens associated with a client id.
@@ -149,7 +148,7 @@ def invalidate_sessions(request):
     if client_id is None:
         return Response(
             {"client_id": ["This field is required."]},
-            status=status.HTTP_400_BAD_REQUEST,
+            status=HTTP_400_BAD_REQUEST,
         )
 
     try:
@@ -160,10 +159,40 @@ def invalidate_sessions(request):
             {
                 "detail": "The application linked to the provided client_id could not be found."
             },
-            status=status.HTTP_400_BAD_REQUEST,
+            status=HTTP_400_BAD_REQUEST,
         )
 
-    return Response({}, status=status.HTTP_204_NO_CONTENT)
+    return Response({}, status=HTTP_204_NO_CONTENT)
+
+
+class InvalidateRefreshTokens(APIView):
+    """
+    Invalidate all refresh tokens associated with a client id.
+    """
+
+    permission_classes = (IsAuthenticated,)
+
+    def get_object(self):
+        return self.request.user
+
+    def post(self, request: Request, *args, **kwargs):
+        serializer = InvalidateRefreshTokenSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        client_id = serializer.validated_data['client_id']
+
+        try:
+            app = Application.objects.get(client_id=client_id)
+            RefreshToken.objects.filter(
+                user=self.get_object(), application=app
+            ).delete()
+        except Application.DoesNotExist:
+            return Response(
+                {
+                    "detail": "The application linked to the provided client_id could not be found."
+                },
+                status=HTTP_400_BAD_REQUEST,
+            )
+        return Response({}, HTTP_204_NO_CONTENT)
 
 
 class DisconnectBackendView(APIView):
@@ -171,7 +200,7 @@ class DisconnectBackendView(APIView):
     An endpoint for disconnect social auth backend providers such as Facebook.
     """
 
-    permission_classes = (permissions.IsAuthenticated,)
+    permission_classes = (IsAuthenticated,)
 
     def get_object(self):
         return self.request.user
@@ -181,14 +210,14 @@ class DisconnectBackendView(APIView):
         if backend is None:
             return Response(
                 {"backend": ["This field is required."]},
-                status=status.HTTP_400_BAD_REQUEST,
+                status=HTTP_400_BAD_REQUEST,
             )
 
         association_id = request.data.get("association_id", None)
         if association_id is None:
             return Response(
                 {"association_id": ["This field is required."]},
-                status=status.HTTP_400_BAD_REQUEST,
+                status=HTTP_400_BAD_REQUEST,
             )
 
         strategy = load_strategy(request=request)
@@ -199,10 +228,10 @@ class DisconnectBackendView(APIView):
             )
         except MissingBackend:
             return Response(
-                {"backend": ["Invalid backend."]}, status=status.HTTP_400_BAD_REQUEST
+                {"backend": ["Invalid backend."]}, status=HTTP_400_BAD_REQUEST
             )
 
         backend.disconnect(
             user=self.get_object(), association_id=association_id, *args, **kwargs
         )
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response(status=HTTP_204_NO_CONTENT)
