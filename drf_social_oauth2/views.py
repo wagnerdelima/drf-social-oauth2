@@ -11,7 +11,13 @@ from oauth2_provider.contrib.rest_framework import OAuth2Authentication
 from oauth2_provider.models import Application, AccessToken, RefreshToken
 from oauth2_provider.settings import oauth2_settings
 from oauth2_provider.views.mixins import OAuthLibMixin
-from oauthlib.oauth2.rfc6749.errors import InvalidClientError, AccessDeniedError
+from oauthlib.oauth2.rfc6749.errors import (
+    InvalidClientError,
+    UnsupportedGrantTypeError,
+    AccessDeniedError,
+    MissingClientIdError,
+    InvalidRequestError,
+)
 
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.status import HTTP_204_NO_CONTENT, HTTP_400_BAD_REQUEST
@@ -106,7 +112,22 @@ class ConvertTokenView(CsrfExemptMixin, OAuthLibMixin, APIView):
             url, headers, body, status = self.create_token_response(request._request)
         except InvalidClientError:
             return Response(
-                data={'invalid_client': 'client_id or client_secret is invalid.'},
+                data={'invalid_client': 'Missing client type.'},
+                status=HTTP_400_BAD_REQUEST,
+            )
+        except MissingClientIdError as ex:
+            return Response(
+                data={'invalid_request': ex.description},
+                status=HTTP_400_BAD_REQUEST,
+            )
+        except InvalidRequestError as ex:
+            return Response(
+                data={'invalid_request': ex.description},
+                status=HTTP_400_BAD_REQUEST,
+            )
+        except UnsupportedGrantTypeError:
+            return Response(
+                data={'unsupported_grant_type': 'Missing grant type.'},
                 status=HTTP_400_BAD_REQUEST,
             )
         except AccessDeniedError:

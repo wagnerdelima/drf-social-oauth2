@@ -8,3 +8,11 @@ class InvalidateRefreshTokenSerializer(Serializer):
     """
 
     client_id = CharField(max_length=100)
+
+
+class ConvertTokenSerializer(Serializer):
+    grant_type = CharField(max_length=32)
+    backend = CharField(max_length=100)
+    client_id = CharField(max_length=100)
+    client_secret = CharField(max_length=255)
+    token = CharField(max_length=500)
