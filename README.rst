@@ -415,6 +415,9 @@ https://developers.google.com/oauthplayground/.
 If you want to have your open id token validated, copy it and hit this url,
 https://oauth2.googleapis.com/tokeninfo?id_token=your_token_here.
 
+You can test these settings by running the following command::
+
+    curl -X POST -d "grant_type=convert_token&client_id=<django-oauth-generated-client_id>&client_secret=<django-oauth-generated-client_secret>&backend=google-identity&token=<google_openid_token>" http://localhost:8000/auth/convert-token
 
 ^^^^^^^^^^^^^^
 
@@ -452,18 +455,19 @@ The click on the Generate Token button. Use the access token as the token parame
 Running local tests
 ^^^^^^^^^^^^^^^^^^^
 
-You may find drf-social-oauth2's unit tests in the tests/ directory. In order to run the tests locally, you can either
-use pytest directly or coverage itself. Prior to running the test cases you need to install the local dependencies by:
+You may find drf-social-oauth2's unit tests in the tests/ directory. In order to run the tests locally, you need to
+build the docker image and execute the test run command with the following commands below:
 
-    $ pip3 install -r requirements.test.txt
 
-Then you can just run pytest in your terminal:
+    $ docker-compose -f docker-compose.tests.yml build --no-cache
+    $ docker-compose -f docker-compose.tests.yml up --exit-code-from app
 
-    $ pytest
+Then, destroy all containers created in your local system:
 
-or call coverage to get the most updated test coverage:
+    $ docker-compose -f docker-compose.tests.yml down
 
-    $ coverage run --source='.' -m pytest && coverage html
+Your local environment has a htmlcov/ folder with the test coverage. See the index.html file for more info about the
+coverage of the project.
 
 
 Customize token expiration
