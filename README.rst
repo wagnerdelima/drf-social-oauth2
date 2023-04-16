@@ -241,8 +241,8 @@ For each authentication provider, the top portion of your REST API settings.py f
 Listed below are a few examples of supported backends that can be used for social authentication.
 
 
-Facebook Example
-^^^^^^^^^^^^^^^^
+Facebook Integration
+^^^^^^^^^^^^^^^^^^^^
 
 To use Facebook as the authorization backend of your REST API, your settings.py file should look like this:
 
@@ -294,8 +294,8 @@ For more information on how to configure python-social-auth with Facebook visit
 http://python-social-auth.readthedocs.io/en/latest/backends/facebook.html.
 
 
-Google Example
-^^^^^^^^^^^^^^
+Google Integration
+^^^^^^^^^^^^^^^^^^
 
 To use Google OAuth2 as the authorization backend of your REST API, your settings.py file should look like this:
 
@@ -346,8 +346,7 @@ For testing purposes, you can use the access token ``<user_access_token>`` from
 https://developers.google.com/oauthplayground/.
 
     1. Visit the OAuth 2.0 Playground
-    2. Select Google OAuth2 API v2 and authorize for https://www.googleapis.com/auth/userinfo.email and
-https://www.googleapis.com/auth/userinfo.profile
+    2. Select Google OAuth2 API v2 and authorize for https://www.googleapis.com/auth/userinfo.email and https://www.googleapis.com/auth/userinfo.profile
     3. Exchange Authorization code for tokens and get access token
     4. Use the access token as the token parameter in the /convert-token endpoint.
 
@@ -358,7 +357,68 @@ For more information on how to configure python-social-auth with Google visit
 https://python-social-auth.readthedocs.io/en/latest/backends/google.html#google-oauth2.
 
 
-GitHub Example
+Google OpenID Integration
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
+OpenID and access tokens are two different concepts that are used in authentication and authorization systems.
+
+OpenID is an open standard that allows users to authenticate with multiple websites and applications using a single
+set of credentials. When a user logs in using OpenID, they are redirected to their OpenID provider, which authenticates
+them and provides the website or application with a unique identifier for the user. The identifier can be used to
+retrieve the user's profile information, but it does not provide any authorization to access APIs or services.
+
+Access tokens, on the other hand, are used to authorize API requests on behalf of the user.
+When a user logs in and grants permission to access their data, an access token is generated and returned to the client
+application. The access token is used to authenticate the client application and authorize it to make API requests on
+behalf of the user. The access token contains information such as the permissions granted to the client application,
+the expiration time, and a signature that verifies the token's authenticity.
+
+In summary, OpenID is used to authenticate users and provide a unique identifier for them, while access tokens are
+used to authorize API requests on behalf of the user. While OpenID and access tokens are both important components
+of authentication and authorization systems, they serve different purposes and should not be confused with each other.
+
+In order to authenticate with Open ID, proceed as follows:
+
+
+.. code-block:: python
+
+    AUTHENTICATION_BACKENDS = (
+        # Others auth providers (e.g. Facebook, OpenId, etc)
+        ...
+        # Google  OAuth2
+        'drf_social_oauth2.backends.GoogleIdentityBackend',
+        # drf-social-oauth2
+        'drf_social_oauth2.backends.DjangoOAuth2',
+        # Django
+        'django.contrib.auth.backends.ModelBackend',
+    )
+
+    # Google configuration
+    SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = <your app id goes here>
+    SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = <your app secret goes here>
+
+    # Define SOCIAL_AUTH_GOOGLE_OAUTH2_SCOPE to get extra permissions from Google.
+    SOCIAL_AUTH_GOOGLE_OAUTH2_SCOPE = [
+        'https://www.googleapis.com/auth/userinfo.email',
+        'https://www.googleapis.com/auth/userinfo.profile',
+    ]
+
+
+For testing purposes, you can use the id token ``<id_token>`` from
+https://developers.google.com/oauthplayground/.
+
+    1. Visit the OAuth 2.0 Playground.
+    2. Select Google OAuth2 API v2 and authorize for openid.
+    3. Exchange Authorization code for tokens and get access token.
+    4. Use the access token as the token parameter in the /convert-token endpoint.
+
+If you want to have your open id token validated, copy it and hit this url,
+https://oauth2.googleapis.com/tokeninfo?id_token=your_token_here.
+
+You can test these settings by running the following command::
+
+    curl -X POST -d "grant_type=convert_token&client_id=<django-oauth-generated-client_id>&client_secret=<django-oauth-generated-client_secret>&backend=google-identity&token=<google_openid_token>" http://localhost:8000/auth/convert-token
+
 ^^^^^^^^^^^^^^
 
 .. code-block:: python
@@ -395,18 +455,19 @@ The click on the Generate Token button. Use the access token as the token parame
 Running local tests
 ^^^^^^^^^^^^^^^^^^^
 
-You may find drf-social-oauth2's unit tests in the tests/ directory. In order to run the tests locally, you can either
-use pytest directly or coverage itself. Prior to running the test cases you need to install the local dependencies by:
+You may find drf-social-oauth2's unit tests in the tests/ directory. In order to run the tests locally, you need to
+build the docker image and execute the test run command with the following commands below:
 
-    $ pip3 install -r requirements.test.txt
 
-Then you can just run pytest in your terminal:
+    $ docker-compose -f docker-compose.tests.yml build --no-cache
+    $ docker-compose -f docker-compose.tests.yml up --exit-code-from app
 
-    $ pytest
+Then, destroy all containers created in your local system:
 
-or call coverage to get the most updated test coverage:
+    $ docker-compose -f docker-compose.tests.yml down
 
-    $ coverage run --source='.' -m pytest && coverage html
+Your local environment has a htmlcov/ folder with the test coverage. See the index.html file for more info about the
+coverage of the project.
 
 
 Customize token expiration
