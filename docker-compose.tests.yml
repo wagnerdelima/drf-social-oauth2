@@ -4,7 +4,9 @@ services:
   app:
     build: .
     command: >
-      bash -c "sh components.sh && python manage_test.py migrate && pytest"
+      bash -c "sh components.sh && python manage_test.py migrate && coverage run --source='.' -m pytest && coverage html"
+    volumes:
+      - $PWD:/code/
     depends_on:
       - db
   db:
