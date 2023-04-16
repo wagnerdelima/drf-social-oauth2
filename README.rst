@@ -242,7 +242,7 @@ Listed below are a few examples of supported backends that can be used for socia
 
 
 Facebook Integration
-^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^
 
 To use Facebook as the authorization backend of your REST API, your settings.py file should look like this:
 
@@ -295,7 +295,7 @@ http://python-social-auth.readthedocs.io/en/latest/backends/facebook.html.
 
 
 Google Integration
-^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^
 
 To use Google OAuth2 as the authorization backend of your REST API, your settings.py file should look like this:
 
