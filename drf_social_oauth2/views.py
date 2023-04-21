@@ -30,7 +30,12 @@ from rest_framework.response import Response
 from rest_framework.request import Request
 from rest_framework.views import APIView
 
-from drf_social_oauth2.serializers import InvalidateRefreshTokenSerializer
+from drf_social_oauth2.serializers import (
+    InvalidateRefreshTokenSerializer,
+    ConvertTokenSerializer,
+    RevokeTokenSerializer,
+    DisconnectBackendSerializer,
+)
 from drf_social_oauth2.oauth2_backends import KeepRequestCore
 from drf_social_oauth2.oauth2_endpoints import SocialTokenServer
 
@@ -102,10 +107,11 @@ class ConvertTokenView(CsrfExemptMixin, OAuthLibMixin, APIView):
     permission_classes = (AllowAny,)
 
     def post(self, request: Request, *args, **kwargs):
+        serializer = ConvertTokenSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
         # Use the rest framework `.data` to fake the post body of the django request.
-        mutable_data = request.data.copy()
         request._request.POST = request._request.POST.copy()
-        for key, value in mutable_data.items():
+        for key, value in serializer.validated_data.items():
             request._request.POST[key] = value
 
         try:
@@ -154,10 +160,11 @@ class RevokeTokenView(CsrfExemptMixin, OAuthLibMixin, APIView):
     permission_classes = (AllowAny,)
 
     def post(self, request: Request, *args, **kwargs):
+        serializer = RevokeTokenSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
         # Use the rest framework `.data` to fake the post body of the django request.
-        mutable_data = request.data.copy()
         request._request.POST = request._request.POST.copy()
-        for key, value in mutable_data.items():
+        for key, value in serializer.validated_data.items():
             request._request.POST[key] = value
 
         url, headers, body, status = self.create_revocation_response(request._request)
@@ -240,20 +247,11 @@ class DisconnectBackendView(APIView):
         return self.request.user
 
     def post(self, request: Request, *args, **kwargs):
-        backend = request.data.get("backend", None)
-        if backend is None:
-            return Response(
-                {"backend": ["This field is required."]},
-                status=HTTP_400_BAD_REQUEST,
-            )
+        serializer = DisconnectBackendSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
 
-        association_id = request.data.get("association_id", None)
-        if association_id is None:
-            return Response(
-                {"association_id": ["This field is required."]},
-                status=HTTP_400_BAD_REQUEST,
-            )
-
+        backend = serializer.validated_data['backend']
+        association_id = serializer.validated_data['association_id']
         strategy = load_strategy(request=request)
         try:
             namespace = 'drf'
