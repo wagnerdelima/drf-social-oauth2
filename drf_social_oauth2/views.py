@@ -7,7 +7,6 @@ from django.views.decorators.csrf import csrf_exempt
 from social_core.exceptions import MissingBackend
 from social_django.utils import load_strategy, load_backend
 
-from oauth2_provider.contrib.rest_framework import OAuth2Authentication
 from oauth2_provider.models import Application, AccessToken, RefreshToken
 from oauth2_provider.settings import oauth2_settings
 from oauth2_provider.views.mixins import OAuthLibMixin
@@ -21,11 +20,6 @@ from oauthlib.oauth2.rfc6749.errors import (
 
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.status import HTTP_204_NO_CONTENT, HTTP_400_BAD_REQUEST
-from rest_framework.decorators import (
-    api_view,
-    authentication_classes,
-    permission_classes,
-)
 from rest_framework.response import Response
 from rest_framework.request import Request
 from rest_framework.views import APIView
@@ -35,6 +29,7 @@ from drf_social_oauth2.serializers import (
     ConvertTokenSerializer,
     RevokeTokenSerializer,
     DisconnectBackendSerializer,
+    InvalidateSessionsSerializer,
 )
 from drf_social_oauth2.oauth2_backends import KeepRequestCore
 from drf_social_oauth2.oauth2_endpoints import SocialTokenServer
@@ -177,33 +172,33 @@ class RevokeTokenView(CsrfExemptMixin, OAuthLibMixin, APIView):
         return response
 
 
-@api_view(['POST'])
-@authentication_classes([OAuth2Authentication])
-@permission_classes([IsAuthenticated])
-def invalidate_sessions(request):
+class InvalidateSessions(APIView):
     """
     Delete all access tokens associated with a client id.
     """
 
-    client_id = request.data.get("client_id", None)
-    if client_id is None:
-        return Response(
-            {"client_id": ["This field is required."]},
-            status=HTTP_400_BAD_REQUEST,
-        )
+    permission_classes = (IsAuthenticated,)
 
-    try:
-        app = Application.objects.get(client_id=client_id)
-        AccessToken.objects.filter(user=request.user, application=app).delete()
-    except Application.DoesNotExist:
-        return Response(
-            {
-                "detail": "The application linked to the provided client_id could not be found."
-            },
-            status=HTTP_400_BAD_REQUEST,
-        )
+    def get_object(self):
+        return self.request.user
 
-    return Response({}, status=HTTP_204_NO_CONTENT)
+    def post(self, request: Request, *args, **kwargs):
+        serializer = InvalidateSessionsSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        client_id = serializer.validated_data['client_id']
+
+        try:
+            app = Application.objects.get(client_id=client_id)
+            AccessToken.objects.filter(user=self.get_object(), application=app).delete()
+        except Application.DoesNotExist:
+            return Response(
+                {
+                    "detail": "The application linked to the provided client_id could not be found."
+                },
+                status=HTTP_400_BAD_REQUEST,
+            )
+
+        return Response({}, status=HTTP_204_NO_CONTENT)
 
 
 class InvalidateRefreshTokens(APIView):
