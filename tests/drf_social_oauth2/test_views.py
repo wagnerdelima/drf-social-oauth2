@@ -11,7 +11,11 @@ from django import setup
 setup()
 
 from django.urls import reverse
+
 from rest_framework.test import APIClient
+from oauth2_provider.models import RefreshToken
+from model_bakery.recipe import Recipe
+
 from tests.drf_social_oauth2.drf_fixtures import application, user, save
 
 
@@ -122,4 +126,38 @@ def test_revoke_token_endpoint(client_api, user, application):
         },
         format='json',
     )
+    assert response.status_code == 204
+
+
+def test_invalidate_refresh_tokens_no_authentication(client_api):
+    response = client_api.post(
+        reverse('invalidate_refresh_tokens'),
+        format='json',
+    )
+
+    assert response.status_code == 403
+
+
+def test_invalidate_refresh_tokens_endpoint_with_no_post_params(client_api, user):
+    client_api.force_authenticate(user=user)
+    response = client_api.post(
+        reverse('invalidate_refresh_tokens'),
+        format='json',
+    )
+
+    assert response.status_code == 400
+
+
+def test_invalidate_refresh_tokens_endpoint(client_api, user, application):
+    token_recipe = Recipe(RefreshToken, user=user, application=application)
+    token_recipe.make(_quantity=5)
+
+    client_api.force_authenticate(user=user)
+    response = client_api.post(
+        reverse('invalidate_refresh_tokens'),
+        data={'client_id': application.client_id},
+        format='json',
+    )
+
+    assert RefreshToken.objects.filter(user=user, application=application).count() == 0
     assert response.status_code == 204
