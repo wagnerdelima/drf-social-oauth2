@@ -5,7 +5,6 @@ from pytest import fixture
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'drf_social_oauth2.test_settings')
 
-from django.http.request import HttpRequest
 from django import setup
 
 setup()
@@ -13,20 +12,13 @@ setup()
 from django.urls import reverse
 
 from rest_framework.test import APIClient
-from oauth2_provider.models import RefreshToken
+from oauth2_provider.models import RefreshToken, AccessToken
 from model_bakery.recipe import Recipe
 
 from tests.drf_social_oauth2.drf_fixtures import application, user, save
 
 
-def create_request(content: str = 'Bearer'):
-    request = HttpRequest()
-    request.META = {'HTTP_AUTHORIZATION': content}
-    request.session = None
-    return request
-
-
-@fixture(scope='module')
+@fixture(scope='function')
 def client_api():
     client = APIClient()
     yield client
@@ -161,3 +153,98 @@ def test_invalidate_refresh_tokens_endpoint(client_api, user, application):
 
     assert RefreshToken.objects.filter(user=user, application=application).count() == 0
     assert response.status_code == 204
+
+
+def test_invalidate_refresh_tokens_endpoint_no_application(
+    client_api, user, application
+):
+    token_recipe = Recipe(AccessToken, user=user, application=application)
+    token_recipe.make(_quantity=5)
+
+    client_api.force_authenticate(user=user)
+    response = client_api.post(
+        reverse('invalidate_refresh_tokens'),
+        data={'client_id': ''},
+        format='json',
+    )
+
+    assert response.status_code == 400
+
+
+def test_invalidate_refresh_tokens_endpoint_invalid_application(
+    client_api, user, application
+):
+    token_recipe = Recipe(AccessToken, user=user, application=application)
+    token_recipe.make(_quantity=5)
+
+    client_api.force_authenticate(user=user)
+    response = client_api.post(
+        reverse('invalidate_refresh_tokens'),
+        data={'client_id': 'invalid'},
+        format='json',
+    )
+
+    assert response.status_code == 400
+
+
+def test_invalidate_sessions_no_authentication(client_api):
+    response = client_api.post(
+        reverse('invalidate_sessions'),
+        format='json',
+    )
+
+    assert response.status_code == 403
+
+
+def test_invalidate_sessions_endpoint_with_no_post_params(client_api, user):
+    client_api.force_authenticate(user=user)
+    response = client_api.post(
+        reverse('invalidate_sessions'),
+        format='json',
+    )
+
+    assert response.status_code == 400
+
+
+def test_invalidate_sessions_endpoint(client_api, user, application):
+    token_recipe = Recipe(AccessToken, user=user, application=application)
+    token_recipe.make(_quantity=5)
+
+    client_api.force_authenticate(user=user)
+    response = client_api.post(
+        reverse('invalidate_sessions'),
+        data={'client_id': application.client_id},
+        format='json',
+    )
+
+    assert response.status_code == 204
+
+
+def test_invalidate_sessions_endpoint_no_application(client_api, user, application):
+    token_recipe = Recipe(AccessToken, user=user, application=application)
+    token_recipe.make(_quantity=5)
+
+    client_api.force_authenticate(user=user)
+    response = client_api.post(
+        reverse('invalidate_sessions'),
+        data={'client_id': ''},
+        format='json',
+    )
+
+    assert response.status_code == 400
+
+
+def test_invalidate_sessions_endpoint_invalid_application(
+    client_api, user, application
+):
+    token_recipe = Recipe(AccessToken, user=user, application=application)
+    token_recipe.make(_quantity=5)
+
+    client_api.force_authenticate(user=user)
+    response = client_api.post(
+        reverse('invalidate_sessions'),
+        data={'client_id': 'invalid'},
+        format='json',
+    )
+
+    assert response.status_code == 400
