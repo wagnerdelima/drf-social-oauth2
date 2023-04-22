@@ -48,7 +48,7 @@ def test_convert_token_endpoint_with_missing_params(client_api):
     assert response.status_code == 400
 
 
-def test_convert_token_endpoint(mocker, client_api, user, application):
+def test_convert_token_endpoint(mocker, client_api, user):
     # mocks the validate_token_request. Otherwise, the validator will fail because the request
     # doesn't contain the proper attributes.
     mocker.patch(
@@ -91,3 +91,35 @@ def test_revoke_token_endpoint_with_no_post_params(client_api):
     )
 
     assert response.status_code == 400
+
+
+def test_revoke_token_endpoint_with_missing_params(client_api):
+    response = client_api.post(
+        reverse('revoke_token'),
+        data={'client_id': 'id', 'client_secret': 'secret'},
+        format='json',
+    )
+
+    assert response.status_code == 400
+
+
+def test_revoke_invalid_token_endpoint(client_api, user, application):
+    response = client_api.post(
+        reverse('revoke_token'),
+        data={'client_id': 'code', 'client_secret': 'code', 'token': 'token'},
+        format='json',
+    )
+    assert response.status_code == 401
+
+
+def test_revoke_token_endpoint(client_api, user, application):
+    response = client_api.post(
+        reverse('revoke_token'),
+        data={
+            'client_id': application.client_id,
+            'client_secret': application.client_secret,
+            'token': 'token',
+        },
+        format='json',
+    )
+    assert response.status_code == 204
