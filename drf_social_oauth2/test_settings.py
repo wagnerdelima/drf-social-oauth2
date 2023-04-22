@@ -6,6 +6,10 @@ SECRET_KEY = 'secret_key'
 
 DEBUG = True
 
+ALLOWED_HOSTS = [
+    'testserver',
+]
+
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -52,6 +56,17 @@ DATABASES = {
         'PORT': 5432,
         'USER': 'user',
         'PASSWORD': 'password',
+    }
+}
+
+TEST_LOCAL_DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'db',
+        'HOST': '127.0.0.1',
+        'PORT': 3333,
+        'USER': 'postgres',
+        'PASSWORD': '0119',
     }
 }
 
