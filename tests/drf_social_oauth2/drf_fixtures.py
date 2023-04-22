@@ -2,7 +2,6 @@ from datetime import datetime, timedelta, timezone
 
 from pytest import fixture
 
-from oauth2_provider.models import Application
 from django.contrib.auth.models import User
 from django.db import IntegrityError
 
