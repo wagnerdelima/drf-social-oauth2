@@ -10,6 +10,10 @@ class InvalidateRefreshTokenSerializer(Serializer):
     client_id = CharField(max_length=100)
 
 
+class InvalidateSessionsSerializer(Serializer):
+    client_id = CharField(max_length=100)
+
+
 class ConvertTokenSerializer(Serializer):
     grant_type = CharField(max_length=32)
     backend = CharField(max_length=100)
