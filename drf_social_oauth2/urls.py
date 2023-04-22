@@ -13,7 +13,7 @@ from drf_social_oauth2.views import (
     ConvertTokenView,
     TokenView,
     RevokeTokenView,
-    invalidate_sessions,
+    InvalidateSessions,
     DisconnectBackendView,
     InvalidateRefreshTokens,
 )
@@ -31,7 +31,9 @@ try:
         url(r'^convert-token/?$', ConvertTokenView.as_view(), name='convert_token'),
         url(r'^revoke-token/?$', RevokeTokenView.as_view(), name='revoke_token'),
         url(
-            r'^invalidate-sessions/?$', invalidate_sessions, name='invalidate_sessions'
+            r'^invalidate-sessions/?$',
+            InvalidateSessions.as_view(),
+            name='invalidate_sessions',
         ),
         url(
             r'invalidate-refresh-tokens/?$',
@@ -52,7 +54,9 @@ except NameError:
         re_path(r'^convert-token/?$', ConvertTokenView.as_view(), name='convert_token'),
         re_path(r'^revoke-token/?$', RevokeTokenView.as_view(), name='revoke_token'),
         re_path(
-            r'^invalidate-sessions/?$', invalidate_sessions, name='invalidate_sessions'
+            r'^invalidate-sessions/?$',
+            InvalidateSessions.as_view(),
+            name='invalidate_sessions',
         ),
         re_path(
             r'invalidate-refresh-tokens/?$',
