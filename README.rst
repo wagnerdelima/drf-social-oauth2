@@ -182,6 +182,10 @@ is a valid backend name, but there is no use to do that here.
 
         curl -H "Authorization: Bearer <token>" -X POST -d "client_id=<client_id>" http://localhost:8000/auth/invalidate-sessions
 
+    Revoke only refresh tokens::
+
+        curl -H "Authorization: Bearer <token>" -X POST -d "client_id=<client_id>" http://localhost:8000/auth/invalidate-refresh-tokens
+
 
 Authenticating Requests
 -----------------------
