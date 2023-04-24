@@ -1,6 +1,60 @@
 Change log
 ==========
 
+2.0.0 - 2023-04-16
+------------------
+
+## What's Changed
+* Google id token setup by @wagnerdelima in https://github.com/wagnerdelima/drf-social-oauth2/pull/163
+* Create codecov.yml by @wagnerdelima in https://github.com/wagnerdelima/drf-social-oauth2/pull/164
+
+**Full Changelog**: https://github.com/wagnerdelima/drf-social-oauth2/compare/1.3.0...2.0.0
+
+
+1.3.0 - 2023-04-02
+------------------
+
+## What's Changed
+* GitHub Sign In by @wagnerdelima in https://github.com/wagnerdelima/drf-social-oauth2/pull/157
+* bug: 🐛 improve imports, typing and fix a revoke token bug. by @wagnerdelima in https://github.com/wagnerdelima/drf-social-oauth2/pull/158
+* Add Invalidate all Refresh Tokens by @wagnerdelima in https://github.com/wagnerdelima/drf-social-oauth2/pull/160
+* Exception Handling for Missing Cliend id and Client Token by @wagnerdelima in https://github.com/wagnerdelima/drf-social-oauth2/pull/161
+* Handling exceptions by @wagnerdelima in https://github.com/wagnerdelima/drf-social-oauth2/pull/162
+
+**Full Changelog**: https://github.com/wagnerdelima/drf-social-oauth2/compare/1.2.2...1.3.0
+
+
+1.2.2 - 2023-03-26
+------------------
+
+## What's Changed
+* Update issue templates by @wagnerdelima in https://github.com/wagnerdelima/drf-social-oauth2/pull/113
+* [Snyk] Security upgrade python from 3.9.4-slim-buster to slim-buster by @snyk-bot in https://github.com/wagnerdelima/drf-social-oauth2/pull/121
+* Update __init__.py by @wagnerdelima in https://github.com/wagnerdelima/drf-social-oauth2/pull/128
+* Create CODE_OF_CONDUCT.md by @wagnerdelima in https://github.com/wagnerdelima/drf-social-oauth2/pull/145
+* Add refresh token generator by @wagnerdelima in https://github.com/wagnerdelima/drf-social-oauth2/pull/153
+* chore: 🔧 remove 'working next tasks'. by @wagnerdelima in https://github.com/wagnerdelima/drf-social-oauth2/pull/155
+* chore: 🔧 add new version. by @wagnerdelima in https://github.com/wagnerdelima/drf-social-oauth2/pull/156
+
+## New Contributors
+* @snyk-bot made their first contribution in https://github.com/wagnerdelima/drf-social-oauth2/pull/121
+
+**Full Changelog**: https://github.com/wagnerdelima/drf-social-oauth2/compare/1.2.1...1.2.2
+
+
+1.2.1 - 2022-06-02
+------------------
+
+## What's Changed
+* Use django timezone.now() in existing token expires_in calculation by @smithumble in https://github.com/wagnerdelima/drf-social-oauth2/pull/109
+* release: add version and update changelog. by @wagnerdelima in https://github.com/wagnerdelima/drf-social-oauth2/pull/112
+
+## New Contributors
+* @smithumble made their first contribution in https://github.com/wagnerdelima/drf-social-oauth2/pull/109
+
+**Full Changelog**: https://github.com/wagnerdelima/drf-social-oauth2/compare/1.2.0...1.2.1
+
+
 1.2.0 - 2022-01-14
 ------------------
 
