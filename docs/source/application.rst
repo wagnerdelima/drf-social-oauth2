@@ -27,3 +27,5 @@ Screenshot of the new application creation.
   :class: png
   :width: 1200
   :alt: Adding a new application to your drf-social-oauth2 installation.
+
+Please, read the :ref:`integration` in order to integrate social libraries into your project.
