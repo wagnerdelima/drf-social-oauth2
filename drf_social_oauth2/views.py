@@ -80,10 +80,7 @@ class TokenView(CsrfExemptMixin, OAuthLibMixin, APIView):
                 status=HTTP_400_BAD_REQUEST,
             )
 
-        response = Response(data=json_loads(body), status=status)
-        for k, v in headers.items():
-            response[k] = v
-        return response
+        return Response(data=json_loads(body), status=status)
 
 
 class ConvertTokenView(CsrfExemptMixin, OAuthLibMixin, APIView):
@@ -137,11 +134,7 @@ class ConvertTokenView(CsrfExemptMixin, OAuthLibMixin, APIView):
                 status=HTTP_400_BAD_REQUEST,
             )
 
-        response = Response(data=json_loads(body), status=status)
-
-        for k, v in headers.items():
-            response[k] = v
-        return response
+        return Response(data=json_loads(body), status=status)
 
 
 class RevokeTokenView(CsrfExemptMixin, OAuthLibMixin, APIView):
@@ -163,13 +156,9 @@ class RevokeTokenView(CsrfExemptMixin, OAuthLibMixin, APIView):
             request._request.POST[key] = value
 
         url, headers, body, status = self.create_revocation_response(request._request)
-        response = Response(
+        return Response(
             data=json_loads(body) if body else '', status=status if body else 204
         )
-
-        for k, v in headers.items():
-            response[k] = v
-        return response
 
 
 class InvalidateSessions(APIView):
