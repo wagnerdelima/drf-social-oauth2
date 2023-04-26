@@ -251,7 +251,7 @@ Now, visit https://github.com/settings/tokens and create a new token. Select the
 The click on the Generate Token button. Use the access token as the token parameter in the /convert-token endpoint.
 
 Other Backend Integration
-=========================
+^^^^^^^^^^^^^^^^^^^^^^^^^
 
 DRF-Social-Oauth2 is not only limited to Google, Facebook and Github. You can integrate with every backend described
 at the Python Social Oauth backend integrations.
