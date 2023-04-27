@@ -237,7 +237,7 @@ Github Integration
         'django.contrib.auth.backends.ModelBackend',
     )
 
-    # Google configuration
+    # GitHub configuration
     SOCIAL_AUTH_GITHUB_KEY = <your app id goes here>
     SOCIAL_AUTH_GITHUB_SECRET = <your app secret goes here>
 
@@ -249,6 +249,60 @@ The Client ID should be added on SOCIAL_AUTH_GITHUB_KEY and the `SOCIAL_AUTH_GIT
 
 Now, visit https://github.com/settings/tokens and create a new token. Select the user checkbox, as to grant user access.
 The click on the Generate Token button. Use the access token as the token parameter in the /convert-token endpoint.
+
+To test the configuration settings, execute the following command:
+
+.. code-block:: console
+
+    $ curl -X POST -d "grant_type=convert_token&client_id=<django-oauth-generated-client_id>&client_secret=<django-oauth-generated-client_secret>&backend=github&token=<github_token>" http://localhost:8000/auth/convert-token
+
+Instagram Integration
+^^^^^^^^^^^^^^^^^^^^^
+
+Before setting up any configuration in your settings.py file, you need to create an application in your Meta For Developers
+dashboard. Follow these `guidelines <https://developers.facebook.com/docs/instagram-basic-display-api/getting-started>`_
+in order to create and configure your application. The steps are easy to follow. Proceed
+until step 6.
+
+Configure your settings.py as follows:
+
+.. code-block:: python
+
+    AUTHENTICATION_BACKENDS = (
+        # Others auth providers (e.g. Facebook, OpenId, etc)
+        ...
+
+        # Instagram OAuth2
+        'social_core.backends.instagram.InstagramOAuth2',
+
+        # drf-social-oauth2
+        'drf_social_oauth2.backends.DjangoOAuth2',
+
+        # Django
+        'django.contrib.auth.backends.ModelBackend',
+    )
+
+    # Instagram configuration
+    SOCIAL_AUTH_INSTAGRAM_KEY = <your app id goes here>
+    SOCIAL_AUTH_INSTAGRAM_SECRET = <your app secret goes here>
+    SOCIAL_AUTH_INSTAGRAM_AUTH_EXTRA_ARGUMENTS = {'scope': 'likes comments relationships'}
+
+
+Once you finished setting up the configuration in your project, copy the access token generated at step 5 (from facebook guidelines).
+Step 5 will return a response as follows:
+
+.. code-block:: python
+
+    {
+      "access_token": "IGQVJ...",
+      "user_id": 17841405793187218
+    }
+
+Copy the access token and use it in the `token` parameter in your /auth/convert-token endpoint. To test the configuration settings, execute the following command:
+
+.. code-block:: console
+
+    $ curl -X POST -d "grant_type=convert_token&client_id=<django-oauth-generated-client_id>&client_secret=<django-oauth-generated-client_secret>&backend=github&token=<access_token>" http://localhost:8000/auth/convert-token
 
 Other Backend Integration
 ^^^^^^^^^^^^^^^^^^^^^^^^^
