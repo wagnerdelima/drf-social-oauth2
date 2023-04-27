@@ -237,7 +237,7 @@ Github Integration
         'django.contrib.auth.backends.ModelBackend',
     )
 
-    # Google configuration
+    # GitHub configuration
     SOCIAL_AUTH_GITHUB_KEY = <your app id goes here>
     SOCIAL_AUTH_GITHUB_SECRET = <your app secret goes here>
 
