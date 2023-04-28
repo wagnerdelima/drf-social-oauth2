@@ -247,6 +247,27 @@ http://example.com/complete/github/ replacing example.com with your domain.
 The Client ID should be added on SOCIAL_AUTH_GITHUB_KEY and the `SOCIAL_AUTH_GITHUB_KEY` should be added on
 `SOCIAL_AUTH_GITHUB_SECRET`.
 
+As described by GitHub's `documentation <https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/authorizing-oauth-apps>`_, you need to
+follow a few steps in order to generate the access token to post requests on behalf of a user, team or  organisation.
+The first step, your application will need to Request a user's GitHub identity by sending a GET request to
+
+.. code-block:: console
+
+    https://github.com/login/oauth/authorize
+
+The only compulsory parameters are `client_id=<the app client id>` and `redirect_uri=<the redirect you added in your app>`.
+You will be redirected to a new location in your browser, such as http://example.com/complete/github?code=d9ba2b356d27455970bf, copy the
+`code=value` from it. Remember, this is only value for 10 minutes. This process should be automated by the module/library integrated
+in your front end application.
+
+The second step is to send a request to:
+
+.. code-block:: console
+
+    $ curl -X POST -d "client_id=<client id>&client_secret=<client secret>&code=<code from previous step>&redirect_uri=<your redirect uri>" https://github.com/login/oauth/access_token
+
+You should receive an access token from the previous step. Once you have the access token, test your configuration
+
 Now, visit https://github.com/settings/tokens and create a new token. Select the user checkbox, as to grant user access.
 The click on the Generate Token button. Use the access token as the token parameter in the /convert-token endpoint.
 
@@ -255,6 +276,8 @@ To test the configuration settings, execute the following command:
 .. code-block:: console
 
     $ curl -X POST -d "grant_type=convert_token&client_id=<django-oauth-generated-client_id>&client_secret=<django-oauth-generated-client_secret>&backend=github&token=<github_token>" http://localhost:8000/auth/convert-token
+
+Read more about GitHub's configuration at `Python Social Auth - Github Page <https://python-social-auth.readthedocs.io/en/latest/backends/github.html>`_
 
 Instagram Integration
 ^^^^^^^^^^^^^^^^^^^^^
