@@ -1,4 +1,4 @@
-import logging
+from logging import getLogger
 
 try:
     from django.urls import reverse
@@ -16,7 +16,7 @@ from social_core.utils import requests
 from drf_social_oauth2.settings import DRFSO2_URL_NAMESPACE
 
 
-log = logging.getLogger(__name__)
+log = getLogger(__name__)
 
 
 class SocialTokenGrant(RefreshTokenGrant):
