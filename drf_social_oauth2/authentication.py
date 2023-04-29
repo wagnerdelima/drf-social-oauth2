@@ -55,30 +55,14 @@ class SocialAuthentication(BaseAuthentication):
 
     www_authenticate_realm = 'api'
 
-    def authenticate(self, request):
+    @validate
+    def authenticate(self, request, **kwargs):
         """
         Returns two-tuple of (user, token) if authentication succeeds,
         or None otherwise.
         """
-        auth_header = get_authorization_header(request).decode(HTTP_HEADER_ENCODING)
-        auth: Union[List[str], List[str, str, str]] = auth_header.split()
-
-        if not auth or auth[0].lower() != 'bearer':
-            return None
-
-        if len(auth) == 1:
-            message = 'Invalid token header. No backend provided.'
-            raise AuthenticationFailed(message)
-        elif len(auth) == 2:
-            message = 'Invalid token header. No credentials provided.'
-            raise AuthenticationFailed(message)
-        elif len(auth) > 3:
-            message = 'Invalid token header. Token string should not contain spaces.'
-            raise AuthenticationFailed(message)
-
-        token: str = auth[2]
-        backend: str = auth[1]
-
+        token: str = kwargs['token']
+        backend: str = kwargs['backend']
         strategy = load_strategy(request=request)
 
         try:
