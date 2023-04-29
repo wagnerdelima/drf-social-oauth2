@@ -145,7 +145,7 @@ class RevokeTokenView(CsrfExemptMixin, OAuthLibMixin, APIView):
     server_class = oauth2_settings.OAUTH2_SERVER_CLASS
     validator_class = oauth2_settings.OAUTH2_VALIDATOR_CLASS
     oauthlib_backend_class = oauth2_settings.OAUTH2_BACKEND_CLASS
-    permission_classes = (AllowAny,)
+    permission_classes = (IsAuthenticated,)
 
     def post(self, request: Request, *args, **kwargs):
         serializer = RevokeTokenSerializer(data=request.data)
