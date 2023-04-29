@@ -32,7 +32,7 @@ try:
             name='invalidate_sessions',
         ),
         url(
-            r'invalidate-refresh-tokens/?$',
+            r'^ invalidate-refresh-tokens/?$',
             InvalidateRefreshTokens.as_view(),
             name='invalidate_refresh_tokens',
         ),
@@ -55,7 +55,7 @@ except NameError:
             name='invalidate_sessions',
         ),
         re_path(
-            r'invalidate-refresh-tokens/?$',
+            r'^invalidate-refresh-tokens/?$',
             InvalidateRefreshTokens.as_view(),
             name='invalidate_refresh_tokens',
         ),
