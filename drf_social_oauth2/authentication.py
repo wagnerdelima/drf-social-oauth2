@@ -1,4 +1,5 @@
-from typing import List, Union
+from typing import List, Union, Callable
+from functools import wraps
 
 try:
     from django.urls import reverse
