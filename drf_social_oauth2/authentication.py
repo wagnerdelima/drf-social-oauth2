@@ -15,6 +15,31 @@ from social_core.exceptions import MissingBackend
 from social_core.utils import requests
 
 
+def validate(function: Callable):
+    @wraps(function)
+    def wrapper_validation(*args, **kwargs):
+        request = args[1]
+        auth_header = get_authorization_header(request).decode(HTTP_HEADER_ENCODING)
+        auth: Union[List[str], List[str, str, str]] = auth_header.split()
+
+        if not auth or auth[0].lower() != 'bearer':
+            return None
+
+        if len(auth) == 1:
+            message = 'Invalid token header. No backend provided.'
+            raise AuthenticationFailed(message)
+        elif len(auth) == 2:
+            message = 'Invalid token header. No credentials provided.'
+            raise AuthenticationFailed(message)
+        elif len(auth) > 3:
+            message = 'Invalid token header. Token string should not contain spaces.'
+            raise AuthenticationFailed(message)
+
+        return function(*args, backend=auth[1], token=auth[2], **kwargs)
+
+    return wrapper_validation
+
+
 class SocialAuthentication(BaseAuthentication):
     """
     Authentication backend using `python-social-auth`
