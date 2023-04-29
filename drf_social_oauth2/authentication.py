@@ -16,7 +16,7 @@ from social_core.exceptions import MissingBackend
 from social_core.utils import requests
 
 
-def validate(function: Callable):
+def validator(function: Callable):
     @wraps(function)
     def wrapper_validation(*args, **kwargs):
         request = args[1]
@@ -27,14 +27,13 @@ def validate(function: Callable):
             return None
 
         if len(auth) == 1:
-            message = 'Invalid token header. No backend provided.'
-            raise AuthenticationFailed(message)
+            raise AuthenticationFailed('Invalid token header. No backend provided.')
         elif len(auth) == 2:
-            message = 'Invalid token header. No credentials provided.'
-            raise AuthenticationFailed(message)
+            raise AuthenticationFailed('Invalid token header. No credentials provided.')
         elif len(auth) > 3:
-            message = 'Invalid token header. Token string should not contain spaces.'
-            raise AuthenticationFailed(message)
+            raise AuthenticationFailed(
+                'Invalid token header. Token string should not contain spaces.'
+            )
 
         return function(*args, backend=auth[1], token=auth[2], **kwargs)
 
@@ -55,7 +54,7 @@ class SocialAuthentication(BaseAuthentication):
 
     www_authenticate_realm = 'api'
 
-    @validate
+    @validator
     def authenticate(self, request, **kwargs):
         """
         Returns two-tuple of (user, token) if authentication succeeds,
@@ -71,7 +70,6 @@ class SocialAuthentication(BaseAuthentication):
                 backend,
                 reverse(f"{NAMESPACE}:complete", args=(backend,)),
             )
-
             user = backend.do_auth(access_token=token)
         except MissingBackend:
             message = 'Invalid token header. Invalid backend.'
