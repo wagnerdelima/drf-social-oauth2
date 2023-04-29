@@ -80,7 +80,8 @@ def test_convert_token_endpoint(mocker, client_api, user):
     assert 'scope' in response.data
 
 
-def test_revoke_token_endpoint_with_no_post_params(client_api):
+def test_revoke_token_endpoint_with_no_post_params(client_api, user):
+    client_api.force_authenticate(user=user)
     response = client_api.post(
         reverse('revoke_token'),
         format='json',
@@ -89,7 +90,8 @@ def test_revoke_token_endpoint_with_no_post_params(client_api):
     assert response.status_code == 400
 
 
-def test_revoke_token_endpoint_with_missing_params(client_api):
+def test_revoke_token_endpoint_with_missing_params(client_api, user):
+    client_api.force_authenticate(user=user)
     response = client_api.post(
         reverse('revoke_token'),
         data={'client_id': 'id', 'client_secret': 'secret'},
@@ -100,6 +102,7 @@ def test_revoke_token_endpoint_with_missing_params(client_api):
 
 
 def test_revoke_invalid_token_endpoint(client_api, user, application):
+    client_api.force_authenticate(user=user)
     response = client_api.post(
         reverse('revoke_token'),
         data={'client_id': 'code', 'client_secret': 'code', 'token': 'token'},
@@ -109,6 +112,7 @@ def test_revoke_invalid_token_endpoint(client_api, user, application):
 
 
 def test_revoke_token_endpoint(client_api, user, application):
+    client_api.force_authenticate(user=user)
     response = client_api.post(
         reverse('revoke_token'),
         data={
