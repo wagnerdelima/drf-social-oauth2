@@ -15,7 +15,7 @@ from drf_social_oauth2.views import (
     InvalidateRefreshTokens,
 )
 
-app_name = 'drfso2'
+app_name = 'drf'
 
 
 urlpatterns = [path('complete/<str:backend>/', complete, name='complete')]
