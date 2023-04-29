@@ -68,7 +68,7 @@ def test_authenticate(mocker):
     authenticated = SocialAuthentication()
     user, token = authenticated.authenticate(request)
     assert user
-    assert token
+    assert token == '401f7ac837da42b97f613d789819ff93537bee6a'
 
 
 def test_authenticate_missing_backend():
