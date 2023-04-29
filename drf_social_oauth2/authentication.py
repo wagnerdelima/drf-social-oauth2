@@ -1,3 +1,5 @@
+from typing import List, Union
+
 try:
     from django.urls import reverse
 except ImportError:  # Will be removed in Django 2.0
@@ -33,7 +35,7 @@ class SocialAuthentication(BaseAuthentication):
         or None otherwise.
         """
         auth_header = get_authorization_header(request).decode(HTTP_HEADER_ENCODING)
-        auth = auth_header.split()
+        auth: Union[List[str], List[str, str, str]] = auth_header.split()
 
         if not auth or auth[0].lower() != 'bearer':
             return None
@@ -48,14 +50,16 @@ class SocialAuthentication(BaseAuthentication):
             message = 'Invalid token header. Token string should not contain spaces.'
             raise AuthenticationFailed(message)
 
-        token = auth[2]
-        backend = auth[1]
+        token: str = auth[2]
+        backend: str = auth[1]
 
         strategy = load_strategy(request=request)
 
         try:
             backend = load_backend(
-                strategy, backend, reverse(f'{NAMESPACE}:complete', args=(backend,)),
+                strategy,
+                backend,
+                reverse(f"{NAMESPACE}:complete", args=(backend,)),
             )
 
             user = backend.do_auth(access_token=token)
@@ -73,4 +77,4 @@ class SocialAuthentication(BaseAuthentication):
         """
         Bearer is the only finalized type currently
         """
-        return 'Bearer backend realm="%s"' % self.www_authenticate_realm
+        return f'Bearer backend realm="{self.www_authenticate_realm}"'
