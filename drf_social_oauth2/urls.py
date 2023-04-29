@@ -1,13 +1,10 @@
 try:
     from django.conf.urls import url, include
-
 except ImportError:
     from django.urls import re_path, include
 
-from django.urls import path
-
 from oauth2_provider.views import AuthorizationView
-from social_django.views import complete
+
 
 from drf_social_oauth2.views import (
     ConvertTokenView,
