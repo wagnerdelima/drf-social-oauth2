@@ -26,6 +26,13 @@ def test_authenticate_no_auth_header_fail():
 
 
 def test_authenticate_no_backend_fail():
+    request = create_request('JWT')
+    authenticated = SocialAuthentication()
+
+    assert not authenticated.authenticate(request)
+
+
+def test_authenticate_no_bearer_token_type():
     request = create_request('Bearer')
     authenticated = SocialAuthentication()
 
