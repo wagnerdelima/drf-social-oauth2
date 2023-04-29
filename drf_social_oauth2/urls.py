@@ -17,8 +17,7 @@ from drf_social_oauth2.views import (
 
 app_name = 'drf'
 
-
-urlpatterns = [path('complete/<str:backend>/', complete, name='complete')]
+urlpatterns = []
 
 try:
     urlpatterns += [
