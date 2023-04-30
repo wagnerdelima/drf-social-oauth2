@@ -1,3 +1,6 @@
+from typing import List, Union, Callable
+from functools import wraps
+
 try:
     from django.urls import reverse
 except ImportError:  # Will be removed in Django 2.0
@@ -11,6 +14,30 @@ from social_django.views import NAMESPACE
 from social_django.utils import load_backend, load_strategy
 from social_core.exceptions import MissingBackend
 from social_core.utils import requests
+
+
+def validator(function: Callable):
+    @wraps(function)
+    def wrapper_validation(*args, **kwargs):
+        request = args[1]
+        auth_header = get_authorization_header(request).decode(HTTP_HEADER_ENCODING)
+        auth: Union[List[str], List[str, str, str]] = auth_header.split()
+
+        if not auth or auth[0].lower() != 'bearer':
+            return None
+
+        if len(auth) == 1:
+            raise AuthenticationFailed('Invalid token header. No backend provided.')
+        elif len(auth) == 2:
+            raise AuthenticationFailed('Invalid token header. No credentials provided.')
+        elif len(auth) > 3:
+            raise AuthenticationFailed(
+                'Invalid token header. Token string should not contain spaces.'
+            )
+
+        return function(*args, backend=auth[1], token=auth[2], **kwargs)
+
+    return wrapper_validation
 
 
 class SocialAuthentication(BaseAuthentication):
@@ -27,37 +54,22 @@ class SocialAuthentication(BaseAuthentication):
 
     www_authenticate_realm = 'api'
 
-    def authenticate(self, request):
+    @validator
+    def authenticate(self, request, **kwargs):
         """
         Returns two-tuple of (user, token) if authentication succeeds,
         or None otherwise.
         """
-        auth_header = get_authorization_header(request).decode(HTTP_HEADER_ENCODING)
-        auth = auth_header.split()
-
-        if not auth or auth[0].lower() != 'bearer':
-            return None
-
-        if len(auth) == 1:
-            message = 'Invalid token header. No backend provided.'
-            raise AuthenticationFailed(message)
-        elif len(auth) == 2:
-            message = 'Invalid token header. No credentials provided.'
-            raise AuthenticationFailed(message)
-        elif len(auth) > 3:
-            message = 'Invalid token header. Token string should not contain spaces.'
-            raise AuthenticationFailed(message)
-
-        token = auth[2]
-        backend = auth[1]
-
+        token: str = kwargs['token']
+        backend: str = kwargs['backend']
         strategy = load_strategy(request=request)
 
         try:
             backend = load_backend(
-                strategy, backend, reverse(f'{NAMESPACE}:complete', args=(backend,)),
+                strategy,
+                backend,
+                reverse(f"{NAMESPACE}:complete", args=(backend,)),
             )
-
             user = backend.do_auth(access_token=token)
         except MissingBackend:
             message = 'Invalid token header. Invalid backend.'
@@ -73,4 +85,4 @@ class SocialAuthentication(BaseAuthentication):
         """
         Bearer is the only finalized type currently
         """
-        return 'Bearer backend realm="%s"' % self.www_authenticate_realm
+        return f'Bearer backend realm="{self.www_authenticate_realm}"'

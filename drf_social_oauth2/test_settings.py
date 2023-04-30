@@ -18,6 +18,10 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'oauth2_provider',
+    'social_django',
+    'drf_social_oauth2',
+    'rest_framework',
+    'rest_framework.authtoken',
 ]
 
 MIDDLEWARE = [
@@ -72,7 +76,6 @@ TEST_LOCAL_DATABASES = {
 
 
 DRFSO2_PROPRIETARY_BACKEND_NAME = 'Django'
-
 DRFSO2_URL_NAMESPACE = 'drf'
 
 ROOT_URLCONF = 'drf_social_oauth2.urls'

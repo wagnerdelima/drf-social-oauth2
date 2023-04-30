@@ -26,6 +26,13 @@ def test_authenticate_no_auth_header_fail():
 
 
 def test_authenticate_no_backend_fail():
+    request = create_request('JWT')
+    authenticated = SocialAuthentication()
+
+    assert not authenticated.authenticate(request)
+
+
+def test_authenticate_no_bearer_token_type():
     request = create_request('Bearer')
     authenticated = SocialAuthentication()
 
@@ -61,7 +68,7 @@ def test_authenticate(mocker):
     authenticated = SocialAuthentication()
     user, token = authenticated.authenticate(request)
     assert user
-    assert token
+    assert token == '401f7ac837da42b97f613d789819ff93537bee6a'
 
 
 def test_authenticate_missing_backend():
@@ -71,3 +78,30 @@ def test_authenticate_missing_backend():
     authenticated = SocialAuthentication()
     with raises(AuthenticationFailed):
         authenticated.authenticate(request)
+
+
+def test_authenticate_user_not_found(mocker):
+    token = 'Bearer facebook 401f7ac837da42b97f613d789819ff93537bee6a'
+
+    request = mocker.patch('django.http.request.HttpRequest')
+    request.session = None
+    request.META = {'HTTP_AUTHORIZATION': token}
+
+    load_backend_mocker = mocker.patch('drf_social_oauth2.authentication.load_backend')
+    load_backend_mocker.return_value.do_auth.return_value = None
+
+    authenticated = SocialAuthentication()
+    with raises(AuthenticationFailed):
+        authenticated.authenticate(request)
+
+
+def test_authenticate_header(mocker):
+    token = 'Bearer facebook 401f7ac837da42b97f613d789819ff93537bee6a'
+
+    request = mocker.patch('django.http.request.HttpRequest')
+    request.session = None
+    request.META = {'HTTP_AUTHORIZATION': token}
+
+    authenticated = SocialAuthentication()
+    text = authenticated.authenticate_header(request)
+    assert text == 'Bearer backend realm="api"'

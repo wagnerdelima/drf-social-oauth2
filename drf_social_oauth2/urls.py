@@ -1,13 +1,10 @@
 try:
     from django.conf.urls import url, include
-
 except ImportError:
     from django.urls import re_path, include
 
-from django.urls import path
-
 from oauth2_provider.views import AuthorizationView
-from social_django.views import complete
+
 
 from drf_social_oauth2.views import (
     ConvertTokenView,
@@ -18,10 +15,9 @@ from drf_social_oauth2.views import (
     InvalidateRefreshTokens,
 )
 
-app_name = 'drfso2'
+app_name = 'drf'
 
-
-urlpatterns = [path('complete/<str:backend>/', complete, name='complete')]
+urlpatterns = []
 
 try:
     urlpatterns += [
@@ -36,7 +32,7 @@ try:
             name='invalidate_sessions',
         ),
         url(
-            r'invalidate-refresh-tokens/?$',
+            r'^ invalidate-refresh-tokens/?$',
             InvalidateRefreshTokens.as_view(),
             name='invalidate_refresh_tokens',
         ),
@@ -59,7 +55,7 @@ except NameError:
             name='invalidate_sessions',
         ),
         re_path(
-            r'invalidate-refresh-tokens/?$',
+            r'^invalidate-refresh-tokens/?$',
             InvalidateRefreshTokens.as_view(),
             name='invalidate_refresh_tokens',
         ),

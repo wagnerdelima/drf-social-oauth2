@@ -1,6 +1,29 @@
 Change log
 ==========
 
+2.1.1 - 2023-04-26
+------------------
+
+## What's Changed
+* 175 create readthedocs documentation by @wagnerdelima in https://github.com/wagnerdelima/drf-social-oauth2/pull/176
+* Running convert-token for the second time returns html headers with user environment variables by @wagnerdelima in https://github.com/wagnerdelima/drf-social-oauth2/pull/177
+
+**Full Changelog**: https://github.com/wagnerdelima/drf-social-oauth2/compare/2.1.0...2.1.1
+
+2.1.0 - 2023-04-24
+------------------
+
+## What's Changed
+* chore: 👷 fix codecov.yml by @wagnerdelima in https://github.com/wagnerdelima/drf-social-oauth2/pull/165
+* doc: 📝 add CONTRIBUTING.md file. by @wagnerdelima in https://github.com/wagnerdelima/drf-social-oauth2/pull/166
+* Create SECURITY.md by @wagnerdelima in https://github.com/wagnerdelima/drf-social-oauth2/pull/167
+* 104 use serializers for views by @wagnerdelima in https://github.com/wagnerdelima/drf-social-oauth2/pull/170
+* docs: 📝 add missing documentation about invalidate refresh tokens. by @wagnerdelima in https://github.com/wagnerdelima/drf-social-oauth2/pull/173
+* Update CHANGELOG.rst by @wagnerdelima in https://github.com/wagnerdelima/drf-social-oauth2/pull/174
+
+**Full Changelog**: https://github.com/wagnerdelima/drf-social-oauth2/compare/2.0.0...2.1.0
+
+
 2.0.0 - 2023-04-16
 ------------------
 

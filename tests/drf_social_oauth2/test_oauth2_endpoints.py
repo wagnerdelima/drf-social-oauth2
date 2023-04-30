@@ -1,6 +1,6 @@
 import os
 from json import loads
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timezone
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'drf_social_oauth2.test_settings')
 
@@ -10,7 +10,7 @@ setup()
 
 from django.contrib.auth.models import User
 
-from oauth2_provider.models import Application, AccessToken, RefreshToken
+from oauth2_provider.models import Application, AccessToken
 
 from drf_social_oauth2.oauth2_endpoints import SocialTokenServer
 from drf_social_oauth2 import generate_token
@@ -39,8 +39,18 @@ def test_create_social_token(mocker, user, application):
         token_generator=generate_token,
     )
 
-    uri = '/auth/convert-token/?grant_type=convert_token&backend=facebook&client_id=code&client_secret=code&token=token'
-    _, data, status = social.create_token_response(uri=uri, http_method='POST', body='')
+    uri = '/auth/convert-token'
+    _, data, status = social.create_token_response(
+        uri=uri,
+        http_method='POST',
+        body={
+            'grant_type': 'convert_token',
+            'backend': 'facebook',
+            'client_id': 'code',
+            'client_secret': 'code',
+            'token': 'token',
+        },
+    )
     data = loads(data)
 
     assert status == 200
@@ -62,15 +72,23 @@ def test_reuse_social_token(mocker, user, application):
         token_generator=generate_token,
     )
 
-    uri = (
-        f'/auth/convert-token/?grant_type=convert_token&'
-        f'backend=facebook&client_id={application.client_id}&client_secret={application.client_secret}&token=token'
-    )
+    uri = '/auth/convert-token'
+    body = {
+        'grant_type': 'convert_token',
+        'backend': 'facebook',
+        'client_id': application.client_id,
+        'client_secret': application.client_secret,
+        'token': 'token',
+    }
     # create the first token.
-    _, data, status = social.create_token_response(uri=uri, http_method='POST', body='')
+    _, data, status = social.create_token_response(
+        uri=uri, http_method='POST', body=body
+    )
 
     # if an access token already exists, then the token is returned and no new token is created.
-    _, data, status = social.create_token_response(uri=uri, http_method='POST', body='')
+    _, data, status = social.create_token_response(
+        uri=uri, http_method='POST', body=body
+    )
     data = loads(data)
 
     assert status == 200
@@ -93,12 +111,18 @@ def test_social_token_expired(mocker, user, application):
         token_generator=generate_token,
     )
 
-    uri = (
-        f'/auth/convert-token/?grant_type=convert_token&'
-        f'backend=facebook&client_id={application.client_id}&client_secret={application.client_secret}&token=token'
-    )
+    uri = '/auth/convert-token'
+    body = {
+        'grant_type': 'convert_token',
+        'backend': 'facebook',
+        'client_id': application.client_id,
+        'client_secret': application.client_secret,
+        'token': 'token',
+    }
     # create the first token.
-    _, data, status = social.create_token_response(uri=uri, http_method='POST', body='')
+    _, data, status = social.create_token_response(
+        uri=uri, http_method='POST', body=body
+    )
     data = loads(data)
 
     # if the access token is expired, a nw access token is generated.
@@ -107,7 +131,9 @@ def test_social_token_expired(mocker, user, application):
     access_token.save()
 
     # if an access token already exists, then the token is returned and no new token is created.
-    _, data, status = social.create_token_response(uri=uri, http_method='POST', body='')
+    _, data, status = social.create_token_response(
+        uri=uri, http_method='POST', body=body
+    )
     data = loads(data)
 
     assert status == 200
