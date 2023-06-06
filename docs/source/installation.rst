@@ -23,7 +23,7 @@ This framework is published at the PyPI, install it with pip:
 
 .. code-block:: console
 
-   $ pip install drf_social_oauth2==2.1.2
+   $ pip install drf_social_oauth2==2.1.3
 
 
 To enable OAuth2 social authentication support for your Django REST Framework application, you need to install
