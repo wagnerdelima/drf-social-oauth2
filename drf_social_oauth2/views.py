@@ -133,6 +133,22 @@ class ConvertTokenView(CsrfExemptMixin, OAuthLibMixin, APIView):
                 {'access_denied': f'The token you provided is invalid or expired.'},
                 status=HTTP_400_BAD_REQUEST,
             )
+        except IntegrityError as e:
+            if 'email' in str(e) and 'already exists' in str(e):
+                return Response(
+                    {'error': 'A user with this email already exists.'},
+                    status=HTTP_400_BAD_REQUEST,
+                )
+            else:
+                return Response(
+                    {'error': 'Database error.'},
+                    status=HTTP_400_BAD_REQUEST,
+                )
+        except Exception as e:
+            return Response(
+                {'error': str(e)},
+                status=HTTP_500_INTERNAL_SERVER_ERROR,
+            )
 
         return Response(data=json_loads(body), status=status)
 
