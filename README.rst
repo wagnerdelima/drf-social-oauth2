@@ -22,7 +22,7 @@ You can read the whole drf-social-oauth2's documentation at: https://drf-social-
 Contributing
 ------------
 
-Details `here <https://github.com/wagnerdelima/drf-social-oauth2/blob/master/CONTRIBUTING.md.>`_
+Details `here <https://github.com/wagnerdelima/drf-social-oauth2/blob/master/CONTRIBUTING.md#:~:text=CODE_OF_CONDUCT.md-,CONTRIBUTING,-.md.>`_
 
 What Am I Working Next?
 ^^^^^^^^^^^^^^^^^^^^^^^
