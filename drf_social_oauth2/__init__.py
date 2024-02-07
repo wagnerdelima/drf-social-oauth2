@@ -8,8 +8,6 @@ and a ton more!
 
 __version__ = '2.1.3'
 
-
-
 try:
     from secrets import SystemRandom
 except ImportError:
