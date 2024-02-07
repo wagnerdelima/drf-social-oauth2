@@ -27,7 +27,7 @@ def generate_token(request, length=30, chars=UNICODE_ASCII_CHARACTER_SET):
     why SystemRandom is used instead of the default random.choice method.
     """
     from django.conf import settings
-    from jose import jwt
+    import jwt
 
     rand = SystemRandom()
     secret = getattr(settings, 'SECRET_KEY')
