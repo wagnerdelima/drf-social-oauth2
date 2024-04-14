@@ -1,4 +1,4 @@
-FROM python:3.10-slim
+FROM python:3.13.0a6-slim
 ENV PYTHONUNBUFFERED 1
 
 RUN mkdir /code
