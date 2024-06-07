@@ -11,7 +11,7 @@ from sphinx.builders.html import StandaloneHTMLBuilder
 project = 'drf-social-oauth2'
 copyright = '2023, Wagner de Lima'
 author = 'Wagner de Lima'
-release = '2.2.0'
+release = '2.2.1'
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
