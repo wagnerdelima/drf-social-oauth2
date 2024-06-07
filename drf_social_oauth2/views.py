@@ -1,5 +1,6 @@
 from json import loads as json_loads
 
+from django.db import IntegrityError
 from django.urls import reverse
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
@@ -19,7 +20,7 @@ from oauthlib.oauth2.rfc6749.errors import (
 )
 
 from rest_framework.permissions import AllowAny, IsAuthenticated
-from rest_framework.status import HTTP_204_NO_CONTENT, HTTP_400_BAD_REQUEST
+from rest_framework.status import HTTP_204_NO_CONTENT, HTTP_400_BAD_REQUEST, HTTP_500_INTERNAL_SERVER_ERROR
 from rest_framework.response import Response
 from rest_framework.request import Request
 from rest_framework.views import APIView
