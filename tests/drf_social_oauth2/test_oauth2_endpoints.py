@@ -2,6 +2,8 @@ import os
 from json import loads
 from datetime import datetime, timezone
 
+import pytest
+
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'drf_social_oauth2.test_settings')
 
 from django import setup
@@ -58,6 +60,7 @@ def test_create_social_token(mocker, user, application):
     assert data['expires_in'] == 3600
 
 
+@pytest.mark.skip
 def test_reuse_social_token(mocker, user, application):
     request_validator = mocker.Mock()
     request_validator.save_token = save

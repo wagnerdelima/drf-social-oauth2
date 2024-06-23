@@ -90,36 +90,9 @@ class SocialTokenServer(TokenEndpoint):
             request.grant_type,
             grant_type_handler,
         )
-
-        # validates request and assigns user to request object.
-        SocialTokenGrant(self.request_validator).validate_token_request(request)
-
-        access_token = self.__check_for_no_existing_tokens(request)
-        # Checks if the last token created exists, and if so, if token is still valid.
-        # also check if an access token has a refresh token associated. Otherwise, create both
-        # access token and refresh token.
-        if (
-            access_token is None
-            or (access_token and access_token.is_expired())
-            or (access_token and not hasattr(access_token, 'refresh_token'))
-        ):
-            # create the request again, as a convert_token grant type.
-            request = self.__create_django_request(
-                uri, http_method, body, headers, credentials
-            )
-            return grant_type_handler.create_token_response(
-                request, self.default_token_type
-            )
-
-        # if token is valid, do not create a new token, just return the token.
-        token = {
-            'access_token': access_token.token,
-            'expires_in': (access_token.expires - timezone.now()).total_seconds(),
-            'scope': access_token.scope,
-            'refresh_token': access_token.refresh_token.token,
-            'token_type': 'Bearer',
-        }
-        return headers, dumps(token), 200
+        return grant_type_handler.create_token_response(
+            request, self.default_token_type
+        )
 
     def __check_for_no_existing_tokens(self, request: Request):
         """
