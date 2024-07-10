@@ -1,3 +1,4 @@
+import logging
 from json import loads as json_loads
 
 from django.db import IntegrityError
@@ -20,7 +21,11 @@ from oauthlib.oauth2.rfc6749.errors import (
 )
 
 from rest_framework.permissions import AllowAny, IsAuthenticated
-from rest_framework.status import HTTP_204_NO_CONTENT, HTTP_400_BAD_REQUEST, HTTP_500_INTERNAL_SERVER_ERROR
+from rest_framework.status import (
+    HTTP_204_NO_CONTENT,
+    HTTP_400_BAD_REQUEST,
+    HTTP_500_INTERNAL_SERVER_ERROR,
+)
 from rest_framework.response import Response
 from rest_framework.request import Request
 from rest_framework.views import APIView
@@ -36,6 +41,9 @@ from drf_social_oauth2.oauth2_backends import KeepRequestCore
 from drf_social_oauth2.oauth2_endpoints import SocialTokenServer
 
 
+logger = logging.getLogger(__package__)
+
+
 def get_application(validated_data: dict) -> Application:
     """
     :param validated_data: A dictionary containing the request validated data.
@@ -45,6 +53,11 @@ def get_application(validated_data: dict) -> Application:
     invalid, it returns a Response object with an appropriate error message and status code.
     """
     client_id = validated_data.get('client_id')
+    if 'client_secret' in validated_data:
+        # Log a warning
+        logger.warning(
+            'client_secret is present in the request data. Consider removing it for better security.'
+        )
 
     # Check if a client_id was provided
     if not client_id:
