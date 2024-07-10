@@ -36,6 +36,33 @@ from drf_social_oauth2.oauth2_backends import KeepRequestCore
 from drf_social_oauth2.oauth2_endpoints import SocialTokenServer
 
 
+def get_application(validated_data: dict) -> Application:
+    """
+    :param validated_data: A dictionary containing the request validated data.
+    :return: An Application object.
+
+    This method retrieves an Application object based on the provided client_id. If a client_id is not provided or is
+    invalid, it returns a Response object with an appropriate error message and status code.
+    """
+    client_id = validated_data.get('client_id')
+
+    # Check if a client_id was provided
+    if not client_id:
+        return Response(
+            data={'invalid_client': 'Missing client_id.'},
+            status=HTTP_400_BAD_REQUEST,
+        )
+
+    try:
+        application = Application.objects.get(client_id=client_id)
+    except Application.DoesNotExist:
+        return Response(
+            data={'invalid_client': 'Invalid client_id.'},
+            status=HTTP_400_BAD_REQUEST,
+        )
+    return application
+
+
 class CsrfExemptMixin:
     """
     Exempts the view from CSRF requirements.
@@ -102,8 +129,11 @@ class ConvertTokenView(CsrfExemptMixin, OAuthLibMixin, APIView):
     def post(self, request: Request, *args, **kwargs):
         serializer = ConvertTokenSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
+
+        application = get_application(serializer.validated_data)
         # Use the rest framework `.data` to fake the post body of the django request.
         request._request.POST = request._request.POST.copy()
+        request._request.POST['client_secret'] = application.client_secret
         for key, value in serializer.validated_data.items():
             request._request.POST[key] = value
 
