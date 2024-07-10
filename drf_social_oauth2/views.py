@@ -208,10 +208,20 @@ class RevokeTokenView(CsrfExemptMixin, OAuthLibMixin, APIView):
     permission_classes = (IsAuthenticated,)
 
     def post(self, request: Request, *args, **kwargs):
+        if 'client_secret' in request.data:
+            # Log a warning
+            logger.warning(
+                'client_secret is present in the request data. Consider removing it for better security.'
+            )
+
         serializer = RevokeTokenSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
+
+        application = get_application(serializer.validated_data)
+
         # Use the rest framework `.data` to fake the post body of the django request.
         request._request.POST = request._request.POST.copy()
+        request._request.POST['client_secret'] = application.client_secret
         for key, value in serializer.validated_data.items():
             request._request.POST[key] = value
 

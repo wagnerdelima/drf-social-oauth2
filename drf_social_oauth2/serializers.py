@@ -23,7 +23,6 @@ class ConvertTokenSerializer(Serializer):
 
 class RevokeTokenSerializer(Serializer):
     client_id = CharField(max_length=200)
-    client_secret = CharField(max_length=500)
     token = CharField(max_length=5000)
 
 
