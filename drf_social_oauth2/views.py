@@ -53,11 +53,6 @@ def get_application(validated_data: dict) -> Application:
     invalid, it returns a Response object with an appropriate error message and status code.
     """
     client_id = validated_data.get('client_id')
-    if 'client_secret' in validated_data:
-        # Log a warning
-        logger.warning(
-            'client_secret is present in the request data. Consider removing it for better security.'
-        )
 
     # Check if a client_id was provided
     if not client_id:
@@ -140,6 +135,11 @@ class ConvertTokenView(CsrfExemptMixin, OAuthLibMixin, APIView):
     permission_classes = (AllowAny,)
 
     def post(self, request: Request, *args, **kwargs):
+        if 'client_secret' in request.data:
+            # Log a warning
+            logger.warning(
+                'client_secret is present in the request data. Consider removing it for better security.'
+            )
         serializer = ConvertTokenSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
