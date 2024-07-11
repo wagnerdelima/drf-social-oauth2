@@ -21,11 +21,11 @@ from tests.drf_social_oauth2.drf_fixtures import application, user, save
 
 def assign_request_application(request):
     user = User.objects.get(email='test@email.com')
-    app = Application.objects.get(user=user.id)
+    app = Application.objects.filter(user=user.id).first()
     request.client = app
 
 
-def test_create_social_token(mocker, user, application):
+def test_create_social_token(mocker, user):
     """
     Creates a social token.
     """
@@ -49,7 +49,6 @@ def test_create_social_token(mocker, user, application):
             'grant_type': 'convert_token',
             'backend': 'facebook',
             'client_id': 'code',
-            'client_secret': 'code',
             'token': 'token',
         },
     )
@@ -80,7 +79,6 @@ def test_reuse_social_token(mocker, user, application):
         'grant_type': 'convert_token',
         'backend': 'facebook',
         'client_id': application.client_id,
-        'client_secret': application.client_secret,
         'token': 'token',
     }
     # create the first token.
@@ -119,7 +117,6 @@ def test_social_token_expired(mocker, user, application):
         'grant_type': 'convert_token',
         'backend': 'facebook',
         'client_id': application.client_id,
-        'client_secret': application.client_secret,
         'token': 'token',
     }
     # create the first token.

@@ -1,3 +1,4 @@
+import logging
 from json import loads as json_loads
 
 from django.db import IntegrityError
@@ -20,7 +21,11 @@ from oauthlib.oauth2.rfc6749.errors import (
 )
 
 from rest_framework.permissions import AllowAny, IsAuthenticated
-from rest_framework.status import HTTP_204_NO_CONTENT, HTTP_400_BAD_REQUEST, HTTP_500_INTERNAL_SERVER_ERROR
+from rest_framework.status import (
+    HTTP_204_NO_CONTENT,
+    HTTP_400_BAD_REQUEST,
+    HTTP_500_INTERNAL_SERVER_ERROR,
+)
 from rest_framework.response import Response
 from rest_framework.request import Request
 from rest_framework.views import APIView
@@ -34,6 +39,29 @@ from drf_social_oauth2.serializers import (
 )
 from drf_social_oauth2.oauth2_backends import KeepRequestCore
 from drf_social_oauth2.oauth2_endpoints import SocialTokenServer
+
+
+logger = logging.getLogger(__package__)
+
+
+def get_application(validated_data: dict) -> Application:
+    """
+    :param validated_data: A dictionary containing the request validated data.
+    :return: An Application object.
+
+    This method retrieves an Application object based on the provided client_id. If a client_id is not provided or is
+    invalid, it returns a Response object with an appropriate error message and status code.
+    """
+    client_id = validated_data.get('client_id')
+
+    if not client_id:
+        return None
+
+    try:
+        application = Application.objects.get(client_id=client_id)
+    except Application.DoesNotExist:
+        return None
+    return application
 
 
 class CsrfExemptMixin:
@@ -100,10 +128,23 @@ class ConvertTokenView(CsrfExemptMixin, OAuthLibMixin, APIView):
     permission_classes = (AllowAny,)
 
     def post(self, request: Request, *args, **kwargs):
+        if 'client_secret' in request.data:
+            # Log a warning
+            logger.warning(
+                'client_secret is present in the request data. Consider removing it for better security.'
+            )
         serializer = ConvertTokenSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
+
+        application = get_application(serializer.validated_data)
+        if not application:
+            return Response(
+                {"detail": "The application for this client_id does not exist."},
+                status=HTTP_400_BAD_REQUEST,
+            )
         # Use the rest framework `.data` to fake the post body of the django request.
         request._request.POST = request._request.POST.copy()
+        request._request.POST['client_secret'] = application.client_secret
         for key, value in serializer.validated_data.items():
             request._request.POST[key] = value
 
@@ -165,10 +206,28 @@ class RevokeTokenView(CsrfExemptMixin, OAuthLibMixin, APIView):
     permission_classes = (IsAuthenticated,)
 
     def post(self, request: Request, *args, **kwargs):
+        if 'client_secret' in request.data:
+            # Log a warning
+            logger.warning(
+                'client_secret is present in the request data. Consider removing it for better security.'
+            )
+
+        auth_header = request.META.get('HTTP_AUTHORIZATION', "")
+        auth_header = auth_header.replace('Bearer ', '', 1)
         serializer = RevokeTokenSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
+
+        application = get_application(serializer.validated_data)
+        if not application:
+            return Response(
+                {"detail": "The application for this client_id does not exist."},
+                status=HTTP_400_BAD_REQUEST,
+            )
+
         # Use the rest framework `.data` to fake the post body of the django request.
         request._request.POST = request._request.POST.copy()
+        request._request.POST['client_secret'] = application.client_secret
+        request._request.POST['token'] = auth_header
         for key, value in serializer.validated_data.items():
             request._request.POST[key] = value
 

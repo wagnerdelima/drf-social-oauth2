@@ -1,6 +1,6 @@
 .. _integration:
 
-Integration Social Backends
+Integrating Social Backends
 ===========================
 
 For each authentication provider, the top portion of your REST API settings.py file should look like this:
@@ -83,7 +83,7 @@ To test your REST API's settings, you can execute the following command:
 
 .. code-block:: console
 
-    $ curl -X POST -d "grant_type=convert_token&client_id=<client_id>&client_secret=<client_secret>&backend=facebook&token=<facebook_token>" http://localhost:8000/auth/convert-token
+    $ curl -X POST -d "grant_type=convert_token&client_id=<client_id>&backend=facebook&token=<facebook_token>" http://uri:port/auth/convert-token
 
 This command will return an `access_token` that you should use for every HTTP request to your API. The purpose of
 this process is to convert a third-party access token (`user_access_token`) into an access token that you can use
@@ -131,7 +131,7 @@ To test the configuration settings, execute the following command:
 
 .. code-block:: console
 
-    $ curl -X POST -d "grant_type=convert_token&client_id=<django-oauth-generated-client_id>&client_secret=<django-oauth-generated-client_secret>&backend=google-oauth2&token=<google_token>" http://localhost:8000/auth/convert-token
+    $ curl -X POST -d "grant_type=convert_token&client_id=<django-oauth-generated-client_id>&backend=google-oauth2&token=<google_token>" http://uri:port/auth/convert-token
 
 Upon successful execution, the above command returns an `access_token` that you must utilize for each HTTP request made
 to your REST API. In essence, what is happening here is that you are converting a third-party access token
@@ -215,7 +215,7 @@ To test the configuration settings, execute the following command:
 
 .. code-block:: console
 
-    $ curl -X POST -d "grant_type=convert_token&client_id=<django-oauth-generated-client_id>&client_secret=<django-oauth-generated-client_secret>&backend=google-identity&token=<google_openid_token>" http://localhost:8000/auth/convert-token
+    $ curl -X POST -d "grant_type=convert_token&client_id=<django-oauth-generated-client_id>&backend=google-identity&token=<google_openid_token>" http://uri:port/auth/convert-token
 
 
 Github Integration
@@ -275,7 +275,7 @@ To test the configuration settings, execute the following command:
 
 .. code-block:: console
 
-    $ curl -X POST -d "grant_type=convert_token&client_id=<django-oauth-generated-client_id>&client_secret=<django-oauth-generated-client_secret>&backend=github&token=<github_token>" http://localhost:8000/auth/convert-token
+    $ curl -X POST -d "grant_type=convert_token&client_id=<django-oauth-generated-client_id>&backend=github&token=<github_token>" http://uri:port/auth/convert-token
 
 Read more about GitHub's configuration at `Python Social Auth - Github Page <https://python-social-auth.readthedocs.io/en/latest/backends/github.html>`_
 
@@ -325,10 +325,62 @@ Copy the access token and use it in the `token` parameter in your /auth/convert-
 
 .. code-block:: console
 
-    $ curl -X POST -d "grant_type=convert_token&client_id=<django-oauth-generated-client_id>&client_secret=<django-oauth-generated-client_secret>&backend=github&token=<access_token>" http://localhost:8000/auth/convert-token
+    $ curl -X POST -d "grant_type=convert_token&client_id=<django-oauth-generated-client_id>&backend=instagram&token=<access_token>" http://uri:port/auth/convert-token
+
+
+LinkedIn Integration
+^^^^^^^^^^^^^^^^^^^^^
+
+Before setting up any configuration in your settings.py file, you need to create an application in your Linked Developers
+dashboard. Visit the `Linked Developer Page <https://developer.linkedin.com/>`_ in order to create and configure
+your application.
+
+For more information on how to create a new app, visit these `guidelines <https://learn.microsoft.com/en-us/linkedin/shared/authentication/developer-portal-tools>`_
+Once your app is created, visit the `Token Generator page <https://www.linkedin.com/developers/tools/oauth/token-generator>`_ and create a token.
+
+Copy the access token and use it in the `token` parameter in your /auth/convert-token endpoint. To test the configuration settings, execute the following command:
+
+.. code-block:: console
+
+    $ curl -X POST -d "grant_type=convert_token&client_id=<django-oauth-generated-client_id>&backend=linkedin-openidconnect&token=<access_token>" http://uri:port/auth/convert-token
+
+
+Note that: Linked In has discontinued Oauth2 since August 2023. They are using OpenID Connect instead.
+
+Configure your settings.py as follows:
+
+.. code-block:: python
+
+    AUTHENTICATION_BACKENDS = (
+        # Others auth providers (e.g. Facebook, OpenId, etc)
+        ...
+
+        # Linked OpenID
+        'social_core.backends.linkedin.LinkedinOpenIdConnect',
+
+        # drf-social-oauth2
+        'drf_social_oauth2.backends.DjangoOAuth2',
+
+        # Django
+        'django.contrib.auth.backends.ModelBackend',
+    )
+
+    # Instagram configuration
+    SOCIAL_AUTH_LINKEDIN_OPENIDCONNECT_KEY = 'key goes here'
+    SOCIAL_AUTH_LINKEDIN_OPENIDCONNECT_SECRET = 'secret goes here'
+
+    SOCIAL_AUTH_LINKEDIN_OAUTH2_SCOPE = ['r_liteprofile', 'r_emailaddress']
+    # Add the fields so they will be requested from linkedin.
+    SOCIAL_AUTH_LINKEDIN_OAUTH2_FIELD_SELECTORS = ['emailAddress']
+    # Arrange to add the fields to UserSocialAuth.extra_data
+    SOCIAL_AUTH_LINKEDIN_OAUTH2_EXTRA_DATA = [('id', 'id'),
+                                              ('firstName', 'first_name'),
+                                              ('lastName', 'last_name'),
+                                              ('emailAddress', 'email_address')]
+
 
 Other Backend Integration
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
-DRF-Social-Oauth2 is not only limited to Google, Facebook and Github. You can integrate with every backend described
+DRF-Social-Oauth2 is not only limited to Google, Facebook, Instagram, Github and LinkedIn. You can integrate with every backend described
 at the Python Social Oauth backend integrations.

@@ -15,6 +15,7 @@ def application(user):
         client_type='confidential',
         authorization_grant_type='Resource owner password-based',
         name='app',
+        client_id='id',
     )
 
     yield app
@@ -40,9 +41,18 @@ def user():
     del user
 
 
-def save(token, request):
+def save(
+    token,
+    request,
+):
     u = User.objects.get(email='test@email.com')
-    app = Application.objects.get(user=u.id)
+    app, _ = Application.objects.get_or_create(
+        user=u,
+        client_type='confidential',
+        authorization_grant_type='Resource owner password-based',
+        name='app',
+        client_id='id',
+    )
     re_token = RefreshToken.objects.create(
         user=u,
         token=token['refresh_token'],

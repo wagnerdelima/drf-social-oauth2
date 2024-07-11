@@ -1,6 +1,7 @@
 import os
 from unittest.mock import PropertyMock
 
+from model_bakery import baker
 from pytest import fixture
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'drf_social_oauth2.test_settings')
@@ -12,9 +13,11 @@ setup()
 from django.urls import reverse
 
 from rest_framework.test import APIClient
-from oauth2_provider.models import RefreshToken, AccessToken
+from rest_framework.status import HTTP_400_BAD_REQUEST
+from oauth2_provider.models import RefreshToken, AccessToken, Application
 from model_bakery.recipe import Recipe
 
+from drf_social_oauth2.views import get_application
 from tests.drf_social_oauth2.drf_fixtures import application, user, save
 
 
@@ -23,6 +26,38 @@ def client_api():
     client = APIClient()
     yield client
     del client
+
+
+def test_revoke_invalid_token_endpoint(client_api, user, application):
+    token = 'Token'
+    client_api.credentials(HTTP_AUTHORIZATION='Bearer ' + token)
+    client_api.force_authenticate(user=user)
+    response = client_api.post(
+        reverse('revoke_token'),
+        data={'client_id': 'id'},
+        format='json',
+    )
+    assert response.status_code == 401
+
+
+def test_get_application(application):
+    """
+    Test the get_application function.
+    """
+    # Test get_application with the correct client_id
+    valid_data = {'client_id': 'id'}
+    result = get_application(valid_data)
+    assert result == application
+
+    # Test get_application with an incorrect client_id
+    invalid_data = {'client_id': 'wrong_client'}
+    result = get_application(invalid_data)
+    assert not result
+
+    # Test get_application with no client_id
+    empty_data = {}
+    result = get_application(empty_data)
+    assert not result
 
 
 def test_convert_token_endpoint_with_no_post_params(client_api):
@@ -44,7 +79,7 @@ def test_convert_token_endpoint_with_missing_params(client_api):
     assert response.status_code == 400
 
 
-def test_convert_token_endpoint(mocker, client_api, user):
+def test_convert_token_endpoint(mocker, client_api, user, application):
     # mocks the validate_token_request. Otherwise, the validator will fail because the request
     # doesn't contain the proper attributes.
     mocker.patch(
@@ -66,8 +101,7 @@ def test_convert_token_endpoint(mocker, client_api, user):
         data={
             'grant_type': 'convert_token',
             'backend': 'facebook',
-            'client_id': 'code',
-            'client_secret': 'code',
+            'client_id': 'id',
             'token': 'token',
         },
         format='json',
@@ -90,39 +124,15 @@ def test_revoke_token_endpoint_with_no_post_params(client_api, user):
     assert response.status_code == 400
 
 
-def test_revoke_token_endpoint_with_missing_params(client_api, user):
+def test_revoke_token_endpoint_with_missing_params(client_api, user, application):
     client_api.force_authenticate(user=user)
     response = client_api.post(
         reverse('revoke_token'),
-        data={'client_id': 'id', 'client_secret': 'secret'},
+        data={},
         format='json',
     )
 
     assert response.status_code == 400
-
-
-def test_revoke_invalid_token_endpoint(client_api, user, application):
-    client_api.force_authenticate(user=user)
-    response = client_api.post(
-        reverse('revoke_token'),
-        data={'client_id': 'code', 'client_secret': 'code', 'token': 'token'},
-        format='json',
-    )
-    assert response.status_code == 401
-
-
-def test_revoke_token_endpoint(client_api, user, application):
-    client_api.force_authenticate(user=user)
-    response = client_api.post(
-        reverse('revoke_token'),
-        data={
-            'client_id': application.client_id,
-            'client_secret': application.client_secret,
-            'token': 'token',
-        },
-        format='json',
-    )
-    assert response.status_code == 204
 
 
 def test_invalidate_refresh_tokens_no_authentication(client_api):

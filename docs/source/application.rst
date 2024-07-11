@@ -28,4 +28,10 @@ Screenshot of the new application creation.
   :width: 1200
   :alt: Adding a new application to your drf-social-oauth2 installation.
 
+In your new application, you will see a Hash client secret checkbox. Do not select that checkbox as the client secret
+will be hashed and I have not yet worked on a fix for that. It turns out that when hashed, the convert-token response
+is invalid.
+
+Note that, this new version of drf-social-oauth2 does not require the client_secret to be passed on the HTTPs requests.
+
 Please, read the :ref:`integration` in order to integrate social libraries into your project.
