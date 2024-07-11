@@ -17,7 +17,7 @@ from rest_framework.status import HTTP_400_BAD_REQUEST
 from oauth2_provider.models import RefreshToken, AccessToken, Application
 from model_bakery.recipe import Recipe
 
-from drf_social_oauth2.views import get_application
+from drf_social_oauth2.views import get_application_or_400
 from tests.drf_social_oauth2.drf_fixtures import application, user, save
 
 
@@ -28,24 +28,36 @@ def client_api():
     del client
 
 
+def test_revoke_invalid_token_endpoint(client_api, user, application):
+    token = 'Token'
+    client_api.credentials(HTTP_AUTHORIZATION='Bearer ' + token)
+    client_api.force_authenticate(user=user)
+    response = client_api.post(
+        reverse('revoke_token'),
+        data={'client_id': 'id'},
+        format='json',
+    )
+    assert response.status_code == 401
+
+
 def test_get_application(application):
     """
     Test the get_application function.
     """
     # Test get_application with the correct client_id
     valid_data = {'client_id': 'id'}
-    result = get_application(valid_data)
+    result = get_application_or_400(valid_data)
     assert result == application
 
     # Test get_application with an incorrect client_id
     invalid_data = {'client_id': 'wrong_client'}
-    result = get_application(invalid_data)
+    result = get_application_or_400(invalid_data)
     assert result.status_code == HTTP_400_BAD_REQUEST
     assert result.data == {'invalid_client': 'Invalid client_id.'}
 
     # Test get_application with no client_id
     empty_data = {}
-    result = get_application(empty_data)
+    result = get_application_or_400(empty_data)
     assert result.status_code == HTTP_400_BAD_REQUEST
     assert result.data == {'invalid_client': 'Missing client_id.'}
 
