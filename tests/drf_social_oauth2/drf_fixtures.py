@@ -46,7 +46,13 @@ def save(
     request,
 ):
     u = User.objects.get(email='test@email.com')
-    app = Application.objects.filter(user=u.id).first()
+    app, _ = Application.objects.get_or_create(
+        user=u,
+        client_type='confidential',
+        authorization_grant_type='Resource owner password-based',
+        name='app',
+        client_id='id',
+    )
     re_token = RefreshToken.objects.create(
         user=u,
         token=token['refresh_token'],
