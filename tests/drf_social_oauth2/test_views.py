@@ -34,10 +34,10 @@ def test_revoke_invalid_token_endpoint(client_api, user, application):
     client_api.force_authenticate(user=user)
     response = client_api.post(
         reverse('revoke_token'),
-        data={'client_id': 'id'},
+        data={'client_id': 'new id'},
         format='json',
     )
-    assert response.status_code == 401
+    assert response.status_code == 400
 
 
 def test_get_application(application):
