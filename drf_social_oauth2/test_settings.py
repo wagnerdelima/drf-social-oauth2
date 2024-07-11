@@ -55,8 +55,20 @@ TEMPLATES = [
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'database',
+        'HOST': 'db',
+        'PORT': 5432,
+        'USER': 'user',
+        'PASSWORD': 'password',
+    }
+}
+
+
+TEST_LOCAL_DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
         'HOST': os.getenv('HOST'),
-        'PORT': int(os.getenv('PORT')),
+        'PORT': int(os.getenv('PORT', 666)),
         'NAME': os.getenv(
             'POSTGRES_DB',
         ),
