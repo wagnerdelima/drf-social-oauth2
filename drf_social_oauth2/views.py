@@ -44,7 +44,7 @@ from drf_social_oauth2.oauth2_endpoints import SocialTokenServer
 logger = logging.getLogger(__package__)
 
 
-def get_application_or_400(validated_data: dict) -> Application:
+def get_application(validated_data: dict) -> Application:
     """
     :param validated_data: A dictionary containing the request validated data.
     :return: An Application object.
@@ -54,20 +54,13 @@ def get_application_or_400(validated_data: dict) -> Application:
     """
     client_id = validated_data.get('client_id')
 
-    # Check if a client_id was provided
     if not client_id:
-        return Response(
-            data={'invalid_client': 'Missing client_id.'},
-            status=HTTP_400_BAD_REQUEST,
-        )
+        return None
 
     try:
         application = Application.objects.get(client_id=client_id)
     except Application.DoesNotExist:
-        return Response(
-            data={'invalid_client': 'Invalid client_id.'},
-            status=HTTP_400_BAD_REQUEST,
-        )
+        return None
     return application
 
 
@@ -143,7 +136,12 @@ class ConvertTokenView(CsrfExemptMixin, OAuthLibMixin, APIView):
         serializer = ConvertTokenSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        application = get_application_or_400(serializer.validated_data)
+        application = get_application(serializer.validated_data)
+        if not application:
+            return Response(
+                {"detail": "The application for this client_id does not exist."},
+                status=HTTP_400_BAD_REQUEST,
+            )
         # Use the rest framework `.data` to fake the post body of the django request.
         request._request.POST = request._request.POST.copy()
         request._request.POST['client_secret'] = application.client_secret
@@ -218,7 +216,13 @@ class RevokeTokenView(CsrfExemptMixin, OAuthLibMixin, APIView):
         auth_header = auth_header.replace('Bearer ', '', 1)
         serializer = RevokeTokenSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        application = get_application_or_400(serializer.validated_data)
+
+        application = get_application(serializer.validated_data)
+        if not application:
+            return Response(
+                {"detail": "The application for this client_id does not exist."},
+                status=HTTP_400_BAD_REQUEST,
+            )
 
         # Use the rest framework `.data` to fake the post body of the django request.
         request._request.POST = request._request.POST.copy()
