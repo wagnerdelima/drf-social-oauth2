@@ -7,6 +7,11 @@ Welcome to DRF-Social-OAuth2
 .. image:: https://www.codefactor.io/repository/github/wagnerdelima/drf-social-oauth2/badge
     :target: https://www.codefactor.io/repository/github/wagnerdelima/drf-social-oauth2/badge
 
+.. image:: https://static.pepy.tech/badge/drf-social-oauth2
+   :target: https://pepy.tech/project/drf-social-oauth2
+
+
+
 Installation
 ------------
 
