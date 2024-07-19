@@ -127,6 +127,20 @@ class ConvertTokenView(CsrfExemptMixin, OAuthLibMixin, APIView):
     oauthlib_backend_class = KeepRequestCore
     permission_classes = (AllowAny,)
 
+    def get_user(self, access_token: str):
+        token = AccessToken.objects.filter(token=access_token).first()
+        return token.user if token else None
+
+    def prepare_response(self, data: dict):
+        user = self.get_user(data.get('access_token'))
+        if user:
+            data['user'] = {
+                'email': user.email,
+                'first_name': user.first_name,
+                'last_name': user.last_name,
+            }
+        return data
+
     def post(self, request: Request, *args, **kwargs):
         if 'client_secret' in request.data:
             # Log a warning
@@ -192,7 +206,8 @@ class ConvertTokenView(CsrfExemptMixin, OAuthLibMixin, APIView):
                 status=HTTP_500_INTERNAL_SERVER_ERROR,
             )
 
-        return Response(data=json_loads(body), status=status)
+        data = self.prepare_response(json_loads(body))
+        return Response(data, status=status)
 
 
 class RevokeTokenView(CsrfExemptMixin, OAuthLibMixin, APIView):
