@@ -6,7 +6,7 @@ By using drf-social-oauth2 you can authenticate with major vendors such as Googl
 and a ton more!
 """
 
-__version__ = '3.0.1'
+__version__ = '3.1.0'
 
 try:
     from secrets import SystemRandom

@@ -356,7 +356,7 @@ Configure your settings.py as follows:
         ...
 
         # Linked OpenID
-        'social_core.backends.linkedin.LinkedinOpenIdConnect',
+        'drf_social_oauth2.backends.LinkedInOpenIDUserInfo',
 
         # drf-social-oauth2
         'drf_social_oauth2.backends.DjangoOAuth2',
@@ -369,14 +369,6 @@ Configure your settings.py as follows:
     SOCIAL_AUTH_LINKEDIN_OPENIDCONNECT_KEY = 'key goes here'
     SOCIAL_AUTH_LINKEDIN_OPENIDCONNECT_SECRET = 'secret goes here'
 
-    SOCIAL_AUTH_LINKEDIN_OAUTH2_SCOPE = ['r_liteprofile', 'r_emailaddress']
-    # Add the fields so they will be requested from linkedin.
-    SOCIAL_AUTH_LINKEDIN_OAUTH2_FIELD_SELECTORS = ['emailAddress']
-    # Arrange to add the fields to UserSocialAuth.extra_data
-    SOCIAL_AUTH_LINKEDIN_OAUTH2_EXTRA_DATA = [('id', 'id'),
-                                              ('firstName', 'first_name'),
-                                              ('lastName', 'last_name'),
-                                              ('emailAddress', 'email_address')]
 
 
 Other Backend Integration
