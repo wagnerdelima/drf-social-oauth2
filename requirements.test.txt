@@ -8,3 +8,4 @@ coverage==6.2
 psycopg2-binary==2.9.3
 model_bakery==1.11.0
 PyJWT==2.8.0
+django>=4.2.15 # not directly required, pinned by Snyk to avoid a vulnerability
