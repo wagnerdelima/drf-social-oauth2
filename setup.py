@@ -1,8 +1,8 @@
 from setuptools import setup, find_packages
 import sys
 
-if sys.version_info < (3, 5):
-    raise SystemError('This package is for Python 3.5 and above.')
+if sys.version_info < (3, 10):
+    raise SystemError('This package requires Python 3.10 or above.')
 
 setup(
     name='drf-social-oauth2',
@@ -14,12 +14,20 @@ setup(
     url='https://github.com/wagnerdelima/drf-social-oauth2',
     license='MIT',
     packages=find_packages(),
+    python_requires='>=3.10',
     classifiers=[
         'Development Status :: 5 - Production/Stable',
         'Environment :: Web Environment',
         'Framework :: Django',
+        'Framework :: Django :: 4.2',
+        'Framework :: Django :: 5.0',
+        'Framework :: Django :: 5.1',
         'License :: OSI Approved :: MIT License',
         'Programming Language :: Python :: 3',
+        'Programming Language :: Python :: 3.10',
+        'Programming Language :: Python :: 3.11',
+        'Programming Language :: Python :: 3.12',
+        'Programming Language :: Python :: 3.13',
         'Topic :: Internet :: WWW/HTTP',
         'Topic :: Software Development :: Libraries :: Python Modules',
         'Intended Audience :: Developers',
@@ -27,9 +35,9 @@ setup(
         'Natural Language :: English',
     ],
     install_requires=[
-        'djangorestframework>=3.10.3',
-        'django-oauth-toolkit>=0.12.0',
-        'social-auth-app-django>=3.1.0',
+        'djangorestframework>=3.14.0',
+        'django-oauth-toolkit>=2.0.0',
+        'social-auth-app-django>=5.0.0',
         'PyJWT>=2.8.0'
     ],
     include_package_data=True,

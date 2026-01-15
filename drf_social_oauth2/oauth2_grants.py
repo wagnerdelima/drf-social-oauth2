@@ -1,10 +1,15 @@
+"""
+OAuth2 grant types for drf-social-oauth2.
+
+This module provides custom OAuth2 grant types that support
+social authentication token conversion.
+"""
+
 from logging import getLogger
 
-try:
-    from django.urls import reverse
-except ImportError:  # Will be removed in Django 2.0
-    from django.core.urlresolvers import reverse
+from django.urls import reverse
 
+from oauthlib.common import Request
 from oauthlib.oauth2.rfc6749 import errors
 from oauthlib.oauth2.rfc6749.grant_types.refresh_token import RefreshTokenGrant
 
@@ -20,33 +25,52 @@ log = getLogger(__name__)
 
 
 class SocialTokenGrant(RefreshTokenGrant):
+    """OAuth2 grant type for converting social provider tokens.
 
-    """`Refresh token grant`_
-    .. _`Refresh token grant`: http://tools.ietf.org/html/rfc6749#section-6
+    This grant type handles the 'convert_token' grant which converts
+    a social provider access token into an OAuth2 access token.
+
+    See Also:
+        RFC 6749 Section 6: https://tools.ietf.org/html/rfc6749#section-6
     """
 
-    def validate_token_request(self, request):
-        # This method's code is based on the parent method's code
-        # We removed the original comments to replace with ours
-        # explaining our modifications.
+    def validate_token_request(self, request: Request) -> None:
+        """Validate the token conversion request.
 
-        # We need to set these at None by default otherwise
-        # we are going to get some AttributeError later
+        Validates that the request contains all required parameters and
+        authenticates the user via the specified social backend.
+
+        Args:
+            request: The oauthlib Request object containing:
+                - grant_type: Must be 'convert_token'
+                - token: The social provider access token
+                - backend: The social backend name (e.g., 'facebook')
+                - client_id: The OAuth2 application client ID
+
+        Raises:
+            UnsupportedGrantTypeError: If grant_type is not 'convert_token'.
+            InvalidRequestError: If token or backend parameters are missing,
+                or if the backend is invalid.
+            MissingClientIdError: If client_id is not provided.
+            InvalidClientIdError: If client_id is invalid.
+            InvalidClientError: If client authentication fails.
+            InvalidGrantError: If user credentials are invalid or user is inactive.
+            AccessDeniedError: If social authentication fails.
+        """
+        # Set defaults to avoid AttributeError later
         request._params.setdefault("backend", None)
         request._params.setdefault("client_secret", None)
 
         if request.grant_type != 'convert_token':
             raise errors.UnsupportedGrantTypeError(request=request)
 
-        # We check that a token parameter is present.
-        # It should contain the social token to be used with the backend
+        # Validate token parameter (social provider token)
         if request.token is None:
             raise errors.InvalidRequestError(
                 description='Missing token parameter.', request=request
             )
 
-        # We check that a backend parameter is present.
-        # It should contain the name of the social backend to be used
+        # Validate backend parameter (social backend name)
         if request.backend is None:
             raise errors.InvalidRequestError(
                 description='Missing backend parameter.', request=request
@@ -58,7 +82,7 @@ class SocialTokenGrant(RefreshTokenGrant):
         if not self.request_validator.validate_client_id(request.client_id, request):
             raise errors.InvalidClientIdError(request=request)
 
-        # Existing code to retrieve the application instance from the client id
+        # Authenticate the client
         if self.request_validator.client_authentication_required(request):
             log.debug('Authenticating client, %r.', request)
             if not self.request_validator.authenticate_client(request):
@@ -70,16 +94,14 @@ class SocialTokenGrant(RefreshTokenGrant):
             log.debug('Client authentication failed, %r.', request)
             raise errors.InvalidClientError(request=request)
 
-        # Ensure client is authorized use of this grant type
-        # We chose refresh_token as a grant_type
-        # as we don't want to modify all the codebase.
-        # It is also the most permissive and logical grant for our needs.
+        # Use refresh_token grant type for validation as it's the most
+        # permissive and logical grant for our needs
         request.grant_type = "refresh_token"
         self.validate_grant_type(request)
 
         self.validate_scopes(request)
 
-        # TODO: Find a better way to pass the django request object
+        # Load the social authentication strategy and backend
         strategy = load_strategy(request=request.django_request)
 
         try:
@@ -87,7 +109,7 @@ class SocialTokenGrant(RefreshTokenGrant):
                 strategy,
                 request.backend,
                 reverse(
-                    "%s:%s:complete" % (DRFSO2_URL_NAMESPACE, NAMESPACE),
+                    f"{DRFSO2_URL_NAMESPACE}:{NAMESPACE}:complete",
                     args=(request.backend,),
                 ),
             )
@@ -96,13 +118,12 @@ class SocialTokenGrant(RefreshTokenGrant):
                 description='Invalid backend parameter.', request=request
             )
 
+        # Authenticate with the social backend
         try:
             user = backend.do_auth(access_token=request.token)
         except requests.HTTPError as e:
             raise errors.InvalidRequestError(
-                description="Backend responded with HTTP{0}: {1}.".format(
-                    e.response.status_code, e.response.text
-                ),
+                description=f"Backend responded with HTTP{e.response.status_code}: {e.response.text}.",
                 request=request,
             )
         except SocialAuthBaseException as e:

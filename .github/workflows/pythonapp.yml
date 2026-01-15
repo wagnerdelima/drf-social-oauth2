@@ -2,26 +2,26 @@ name: DRF Social Oauth2
 
 on:
   pull_request:
-    types: [opened, edited]
+    types: [opened, edited, synchronize]
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v1
-    - name: Set up Python 3.9
-      uses: actions/setup-python@v1
+    - uses: actions/checkout@v4
+    - name: Set up Python 3.13
+      uses: actions/setup-python@v5
       with:
-        python-version: 3.9
+        python-version: '3.13'
 
     - name: Build docker image for tests
       run: |
-        docker-compose -f docker-compose.tests.yml build --no-cache
+        docker compose -f docker-compose.tests.yml build --no-cache
 
     - name: Run dockerised tests
       run: |
-        docker-compose -f docker-compose.tests.yml up --exit-code-from app
+        docker compose -f docker-compose.tests.yml up --exit-code-from app
 
     - name: Take down containers
       run: |
-        docker-compose -f docker-compose.tests.yml down
+        docker compose -f docker-compose.tests.yml down
