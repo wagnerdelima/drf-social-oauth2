@@ -1,6 +1,6 @@
 import os
-from json import loads
 from datetime import datetime, timezone
+from json import loads
 
 import pytest
 
@@ -11,12 +11,11 @@ from django import setup
 setup()
 
 from django.contrib.auth.models import User
+from oauth2_provider.models import AccessToken, Application
 
-from oauth2_provider.models import Application, AccessToken
-
-from drf_social_oauth2.oauth2_endpoints import SocialTokenServer
 from drf_social_oauth2 import generate_token
-from tests.drf_social_oauth2.drf_fixtures import application, user, save
+from drf_social_oauth2.oauth2_endpoints import SocialTokenServer
+from tests.drf_social_oauth2.drf_fixtures import save
 
 
 def assign_request_application(request):

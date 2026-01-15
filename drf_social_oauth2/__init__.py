@@ -43,11 +43,11 @@ def generate_token(
     Returns:
         A JWT-encoded token string.
     """
-    from django.conf import settings
     import jwt
+    from django.conf import settings
 
     rand = SystemRandom()
-    secret: str = getattr(settings, 'SECRET_KEY')
+    secret: str = settings.SECRET_KEY
 
     token = ''.join(rand.choice(chars) for _ in range(length))
     jwtted_token: str = jwt.encode({'token': token}, secret, algorithm='HS256')

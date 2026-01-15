@@ -1,5 +1,6 @@
-from setuptools import setup, find_packages
 import sys
+
+from setuptools import find_packages, setup
 
 if sys.version_info < (3, 10):
     raise SystemError('This package requires Python 3.10 or above.')

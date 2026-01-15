@@ -2,6 +2,37 @@
 name = "drf-social-oauth2"
 requires-python = ">=3.10"
 
+[tool.ruff]
+target-version = "py310"
+line-length = 100
+
+[tool.ruff.lint]
+select = [
+    "E",      # pycodestyle errors
+    "W",      # pycodestyle warnings
+    "F",      # Pyflakes
+    "I",      # isort
+    "B",      # flake8-bugbear
+    "C4",     # flake8-comprehensions
+    "UP",     # pyupgrade
+]
+ignore = [
+    "E501",   # line too long (handled by formatter)
+    "B008",   # do not perform function calls in argument defaults
+    "B904",   # raise without from inside except
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**/*.py" = ["E402"]  # Allow imports after django.setup()
+"setup.py" = ["UP036"]      # Allow version check in setup.py
+
+[tool.ruff.lint.isort]
+known-first-party = ["drf_social_oauth2"]
+
+[tool.ruff.format]
+quote-style = "single"
+skip-magic-trailing-comma = false
+
 [tool.black]
 include = '\.pyi?$'
 skip-string-normalization = true
@@ -24,3 +55,4 @@ exclude = '''
 python_files = ["test_*.py"]
 python_classes = ["Test*"]
 python_functions = ["test_*"]
+DJANGO_SETTINGS_MODULE = "drf_social_oauth2.test_settings"

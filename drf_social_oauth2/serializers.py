@@ -5,7 +5,7 @@ This module provides serializers for validating request data
 in OAuth2 token operations.
 """
 
-from rest_framework.serializers import Serializer, CharField, IntegerField
+from rest_framework.serializers import CharField, IntegerField, Serializer
 
 
 class InvalidateRefreshTokenSerializer(Serializer):

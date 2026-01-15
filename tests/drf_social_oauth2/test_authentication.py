@@ -1,12 +1,12 @@
 import os
 
-from rest_framework.exceptions import AuthenticationFailed
 from pytest import raises
+from rest_framework.exceptions import AuthenticationFailed
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'drf_social_oauth2.test_settings')
 
-from django.http.request import HttpRequest
 from django import setup
+from django.http.request import HttpRequest
 
 setup()
 

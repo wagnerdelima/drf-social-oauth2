@@ -5,17 +5,16 @@ This module defines the URL patterns for OAuth2 endpoints including
 token generation, conversion, revocation, and session management.
 """
 
-from django.urls import re_path, include
-
+from django.urls import include, re_path
 from oauth2_provider.views import AuthorizationView
 
 from drf_social_oauth2.views import (
     ConvertTokenView,
-    TokenView,
-    RevokeTokenView,
-    InvalidateSessions,
     DisconnectBackendView,
     InvalidateRefreshTokens,
+    InvalidateSessions,
+    RevokeTokenView,
+    TokenView,
 )
 
 app_name = 'drf'

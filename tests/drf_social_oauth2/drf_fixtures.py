@@ -1,11 +1,9 @@
 from datetime import datetime, timedelta, timezone
 
-from pytest import fixture
-
 from django.contrib.auth.models import User
 from django.db import IntegrityError
-
-from oauth2_provider.models import Application, AccessToken, RefreshToken
+from oauth2_provider.models import AccessToken, Application, RefreshToken
+from pytest import fixture
 
 
 @fixture(scope='function')

@@ -5,22 +5,20 @@ This module provides authentication classes that integrate python-social-auth
 with Django REST Framework.
 """
 
+from collections.abc import Callable
 from functools import wraps
-from typing import Any, Callable, List, Optional, Tuple, TypeVar
+from typing import Any, TypeVar
 
 from django.contrib.auth.models import AbstractBaseUser
 from django.urls import reverse
-
-from rest_framework.authentication import BaseAuthentication, get_authorization_header
 from rest_framework import HTTP_HEADER_ENCODING
+from rest_framework.authentication import BaseAuthentication, get_authorization_header
 from rest_framework.exceptions import AuthenticationFailed
 from rest_framework.request import Request
-
-from social_django.views import NAMESPACE
-from social_django.utils import load_backend, load_strategy
 from social_core.exceptions import MissingBackend
 from social_core.utils import requests
-
+from social_django.utils import load_backend, load_strategy
+from social_django.views import NAMESPACE
 
 F = TypeVar('F', bound=Callable[..., Any])
 
@@ -43,10 +41,10 @@ def validator(function: F) -> F:
     @wraps(function)
     def wrapper_validation(
         *args: Any, **kwargs: Any
-    ) -> Optional[Tuple[AbstractBaseUser, str]]:
+    ) -> tuple[AbstractBaseUser, str] | None:
         request = args[1]
         auth_header = get_authorization_header(request).decode(HTTP_HEADER_ENCODING)
-        auth: List[str] = auth_header.split()
+        auth: list[str] = auth_header.split()
 
         if not auth or auth[0].lower() != 'bearer':
             return None
@@ -87,7 +85,7 @@ class SocialAuthentication(BaseAuthentication):
     @validator
     def authenticate(
         self, request: Request, **kwargs: Any
-    ) -> Optional[Tuple[AbstractBaseUser, str]]:
+    ) -> tuple[AbstractBaseUser, str] | None:
         """Authenticate the request using a social provider token.
 
         Args:

@@ -10,53 +10,49 @@ This module provides API views for OAuth2 token operations including:
 
 import logging
 from json import loads as json_loads
-from typing import Any, Dict, Optional
+from typing import Any
 
 from django.contrib.auth.models import AbstractBaseUser
 from django.db import IntegrityError
 from django.urls import reverse
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
-
-from social_core.exceptions import MissingBackend
-from social_django.utils import load_strategy, load_backend
-
-from oauth2_provider.models import Application, AccessToken, RefreshToken
+from oauth2_provider.models import AccessToken, Application, RefreshToken
 from oauth2_provider.settings import oauth2_settings
 from oauth2_provider.views.mixins import OAuthLibMixin
 from oauthlib.oauth2.rfc6749.errors import (
-    InvalidClientError,
-    UnsupportedGrantTypeError,
     AccessDeniedError,
-    MissingClientIdError,
+    InvalidClientError,
     InvalidRequestError,
+    MissingClientIdError,
+    UnsupportedGrantTypeError,
 )
-
 from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.request import Request
+from rest_framework.response import Response
 from rest_framework.status import (
     HTTP_204_NO_CONTENT,
     HTTP_400_BAD_REQUEST,
     HTTP_500_INTERNAL_SERVER_ERROR,
 )
-from rest_framework.response import Response
-from rest_framework.request import Request
 from rest_framework.views import APIView
+from social_core.exceptions import MissingBackend
+from social_django.utils import load_backend, load_strategy
 
-from drf_social_oauth2.serializers import (
-    InvalidateRefreshTokenSerializer,
-    ConvertTokenSerializer,
-    RevokeTokenSerializer,
-    DisconnectBackendSerializer,
-    InvalidateSessionsSerializer,
-)
 from drf_social_oauth2.oauth2_backends import KeepRequestCore
 from drf_social_oauth2.oauth2_endpoints import SocialTokenServer
-
+from drf_social_oauth2.serializers import (
+    ConvertTokenSerializer,
+    DisconnectBackendSerializer,
+    InvalidateRefreshTokenSerializer,
+    InvalidateSessionsSerializer,
+    RevokeTokenSerializer,
+)
 
 logger = logging.getLogger(__package__)
 
 
-def get_application(validated_data: Dict[str, Any]) -> Optional[Application]:
+def get_application(validated_data: dict[str, Any]) -> Application | None:
     """Retrieve an Application object based on the provided client_id.
 
     Args:
@@ -66,7 +62,7 @@ def get_application(validated_data: Dict[str, Any]) -> Optional[Application]:
     Returns:
         The Application object if found, None otherwise.
     """
-    client_id: Optional[str] = validated_data.get('client_id')
+    client_id: str | None = validated_data.get('client_id')
 
     if not client_id:
         return None
@@ -88,7 +84,7 @@ class CsrfExemptMixin:
 
     @method_decorator(csrf_exempt)
     def dispatch(self, *args: Any, **kwargs: Any) -> Response:
-        return super(CsrfExemptMixin, self).dispatch(*args, **kwargs)
+        return super().dispatch(*args, **kwargs)
 
 
 class TokenView(CsrfExemptMixin, OAuthLibMixin, APIView):
@@ -148,7 +144,7 @@ class ConvertTokenView(CsrfExemptMixin, OAuthLibMixin, APIView):
     oauthlib_backend_class = KeepRequestCore
     permission_classes = (AllowAny,)
 
-    def get_user(self, access_token: str) -> Optional[AbstractBaseUser]:
+    def get_user(self, access_token: str) -> AbstractBaseUser | None:
         """Retrieve the user associated with an access token.
 
         Args:
@@ -160,7 +156,7 @@ class ConvertTokenView(CsrfExemptMixin, OAuthLibMixin, APIView):
         token = AccessToken.objects.filter(token=access_token).first()
         return token.user if token else None
 
-    def prepare_response(self, data: Dict[str, Any]) -> Dict[str, Any]:
+    def prepare_response(self, data: dict[str, Any]) -> dict[str, Any]:
         """Add user information to the response data.
 
         Args:
@@ -248,7 +244,7 @@ class ConvertTokenView(CsrfExemptMixin, OAuthLibMixin, APIView):
                     {'error': 'Database error.'},
                     status=HTTP_400_BAD_REQUEST,
                 )
-        except Exception as e:
+        except Exception:
             logger.exception('Unexpected error during token conversion')
             return Response(
                 {'error': 'An unexpected error occurred.'},
@@ -451,6 +447,6 @@ class DisconnectBackendView(APIView):
             )
 
         backend.disconnect(
-            user=self.get_object(), association_id=association_id, *args, **kwargs
+            user=self.get_object(), association_id=association_id, **kwargs
         )
         return Response(status=HTTP_204_NO_CONTENT)

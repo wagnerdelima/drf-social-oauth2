@@ -16,7 +16,6 @@ Available settings:
 from django.conf import settings
 from oauth2_provider import settings as oauth2_settings
 
-
 # Name for the proprietary OAuth2 backend
 DRFSO2_PROPRIETARY_BACKEND_NAME: str = getattr(
     settings, 'DRFSO2_PROPRIETARY_BACKEND_NAME', "Django"
