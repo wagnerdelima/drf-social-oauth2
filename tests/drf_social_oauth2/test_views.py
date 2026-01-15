@@ -1,4 +1,6 @@
 import os
+import uuid
+from datetime import datetime, timedelta, timezone
 from unittest.mock import PropertyMock
 
 from model_bakery import baker
@@ -19,6 +21,16 @@ from model_bakery.recipe import Recipe
 
 from drf_social_oauth2.views import get_application
 from tests.drf_social_oauth2.drf_fixtures import application, user, save
+
+
+def generate_token():
+    """Generate a unique token string."""
+    return uuid.uuid4().hex
+
+
+def get_expires():
+    """Get an expiration datetime in the future."""
+    return datetime.now(tz=timezone.utc) + timedelta(hours=1)
 
 
 @fixture(scope='function')
@@ -155,8 +167,13 @@ def test_invalidate_refresh_tokens_endpoint_with_no_post_params(client_api, user
 
 
 def test_invalidate_refresh_tokens_endpoint(client_api, user, application):
-    token_recipe = Recipe(RefreshToken, user=user, application=application)
-    token_recipe.make(_quantity=5)
+    # Create refresh tokens manually since model_bakery has issues with TokenChecksumField
+    for _ in range(5):
+        RefreshToken.objects.create(
+            user=user,
+            application=application,
+            token=generate_token(),
+        )
 
     client_api.force_authenticate(user=user)
     response = client_api.post(
@@ -172,8 +189,14 @@ def test_invalidate_refresh_tokens_endpoint(client_api, user, application):
 def test_invalidate_refresh_tokens_endpoint_no_application(
     client_api, user, application
 ):
-    token_recipe = Recipe(AccessToken, user=user, application=application)
-    token_recipe.make(_quantity=5)
+    # Create access tokens manually
+    for _ in range(5):
+        AccessToken.objects.create(
+            user=user,
+            application=application,
+            token=generate_token(),
+            expires=get_expires(),
+        )
 
     client_api.force_authenticate(user=user)
     response = client_api.post(
@@ -188,8 +211,14 @@ def test_invalidate_refresh_tokens_endpoint_no_application(
 def test_invalidate_refresh_tokens_endpoint_invalid_application(
     client_api, user, application
 ):
-    token_recipe = Recipe(AccessToken, user=user, application=application)
-    token_recipe.make(_quantity=5)
+    # Create access tokens manually
+    for _ in range(5):
+        AccessToken.objects.create(
+            user=user,
+            application=application,
+            token=generate_token(),
+            expires=get_expires(),
+        )
 
     client_api.force_authenticate(user=user)
     response = client_api.post(
@@ -221,8 +250,14 @@ def test_invalidate_sessions_endpoint_with_no_post_params(client_api, user):
 
 
 def test_invalidate_sessions_endpoint(client_api, user, application):
-    token_recipe = Recipe(AccessToken, user=user, application=application)
-    token_recipe.make(_quantity=5)
+    # Create access tokens manually
+    for _ in range(5):
+        AccessToken.objects.create(
+            user=user,
+            application=application,
+            token=generate_token(),
+            expires=get_expires(),
+        )
 
     client_api.force_authenticate(user=user)
     response = client_api.post(
@@ -235,8 +270,14 @@ def test_invalidate_sessions_endpoint(client_api, user, application):
 
 
 def test_invalidate_sessions_endpoint_no_application(client_api, user, application):
-    token_recipe = Recipe(AccessToken, user=user, application=application)
-    token_recipe.make(_quantity=5)
+    # Create access tokens manually
+    for _ in range(5):
+        AccessToken.objects.create(
+            user=user,
+            application=application,
+            token=generate_token(),
+            expires=get_expires(),
+        )
 
     client_api.force_authenticate(user=user)
     response = client_api.post(
@@ -251,8 +292,14 @@ def test_invalidate_sessions_endpoint_no_application(client_api, user, applicati
 def test_invalidate_sessions_endpoint_invalid_application(
     client_api, user, application
 ):
-    token_recipe = Recipe(AccessToken, user=user, application=application)
-    token_recipe.make(_quantity=5)
+    # Create access tokens manually
+    for _ in range(5):
+        AccessToken.objects.create(
+            user=user,
+            application=application,
+            token=generate_token(),
+            expires=get_expires(),
+        )
 
     client_api.force_authenticate(user=user)
     response = client_api.post(
