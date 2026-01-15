@@ -1,7 +1,13 @@
-try:
-    from django.urls import reverse
-except ImportError:  # Will be removed in Django 2.0
-    from django.core.urlresolvers import reverse
+"""
+Social authentication backends for drf-social-oauth2.
+
+This module provides custom social authentication backends for various providers
+including Django's own OAuth2 backend, Google Identity, and LinkedIn OpenID.
+"""
+
+from typing import Any, Dict, Optional
+
+from django.urls import reverse
 
 from social_core.backends.oauth import BaseOAuth2
 from social_core.backends.google import GooglePlusAuth
@@ -14,27 +20,52 @@ from drf_social_oauth2.settings import (
 
 
 class DjangoOAuth2(BaseOAuth2):
-    """Default OAuth2 authentication backend used by this package"""
+    """Default OAuth2 authentication backend used by this package.
 
-    name = DRFSO2_PROPRIETARY_BACKEND_NAME
-    AUTHORIZATION_URL = reverse(
+    This backend allows authentication against the Django application's
+    own OAuth2 endpoints.
+
+    Attributes:
+        name: The backend identifier name.
+        AUTHORIZATION_URL: The URL for OAuth2 authorization.
+        ACCESS_TOKEN_URL: The URL for obtaining access tokens.
+    """
+
+    name: str = DRFSO2_PROPRIETARY_BACKEND_NAME
+    AUTHORIZATION_URL: str = reverse(
         f'{DRFSO2_URL_NAMESPACE}:authorize' if DRFSO2_URL_NAMESPACE else 'authorize'
     )
-    ACCESS_TOKEN_URL = reverse(
+    ACCESS_TOKEN_URL: str = reverse(
         f'{DRFSO2_URL_NAMESPACE}:token' if DRFSO2_URL_NAMESPACE else 'token'
     )
 
 
 class GoogleIdentityBackend(GooglePlusAuth):
-    """
-    Google has shifted to Open ID instead of access token. This authentication backend makes it possible to
-    authenticate with google id_token.
+    """Google Identity authentication backend using OpenID Connect.
+
+    Google has shifted to OpenID Connect instead of access tokens.
+    This backend enables authentication with Google's id_token.
+
+    Attributes:
+        name: The backend identifier name.
     """
 
-    name = "google-identity"
+    name: str = "google-identity"
 
-    def user_data(self, access_token, *args, **kwargs):
-        response = self.get_json(
+    def user_data(
+        self, access_token: str, *args: Any, **kwargs: Any
+    ) -> Dict[str, Any]:
+        """Fetch user data from Google's tokeninfo endpoint.
+
+        Args:
+            access_token: The Google id_token.
+            *args: Variable length argument list.
+            **kwargs: Arbitrary keyword arguments.
+
+        Returns:
+            Dictionary containing user information from Google.
+        """
+        response: Dict[str, Any] = self.get_json(
             "https://www.googleapis.com/oauth2/v3/tokeninfo",
             params={"id_token": access_token},
         )
@@ -43,16 +74,41 @@ class GoogleIdentityBackend(GooglePlusAuth):
 
 
 class LinkedInOpenIDUserInfo(LinkedinOpenIdConnect):
-    def user_data(self, access_token, *args, **kwargs):
-        response = self.get_json(
+    """LinkedIn OpenID Connect authentication backend.
+
+    Fetches user information from LinkedIn's userinfo endpoint.
+    """
+
+    def user_data(
+        self, access_token: str, *args: Any, **kwargs: Any
+    ) -> Dict[str, Any]:
+        """Fetch user data from LinkedIn's userinfo endpoint.
+
+        Args:
+            access_token: The LinkedIn access token.
+            *args: Variable length argument list.
+            **kwargs: Arbitrary keyword arguments.
+
+        Returns:
+            Dictionary containing user information from LinkedIn.
+        """
+        response: Dict[str, Any] = self.get_json(
             "https://api.linkedin.com/v2/userinfo",
             headers={"Authorization": f"Bearer {access_token}"},
         )
         self.process_error(response)
         return response
 
-    def get_user_details(self, response):
-        username_key = self.setting("USERNAME_KEY", self.USERNAME_KEY)
+    def get_user_details(self, response: Dict[str, Any]) -> Dict[str, Optional[str]]:
+        """Extract user details from the LinkedIn response.
+
+        Args:
+            response: The response dictionary from LinkedIn's userinfo endpoint.
+
+        Returns:
+            Dictionary containing normalized user details.
+        """
+        username_key: str = self.setting("USERNAME_KEY", self.USERNAME_KEY)
         return {
             "username": response.get(username_key),
             "email": response.get("email"),
