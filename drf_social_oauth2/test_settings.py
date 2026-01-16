@@ -70,3 +70,17 @@ DRFSO2_URL_NAMESPACE = 'drf'
 ROOT_URLCONF = 'drf_social_oauth2.urls'
 
 USE_TZ = True
+
+# OAuth2 Provider settings with refresh token rotation enabled
+OAUTH2_PROVIDER = {
+    # Refresh token rotation: issue new refresh token on each use
+    'ROTATE_REFRESH_TOKEN': True,
+    # Reuse protection: revoke all tokens if a used refresh token is reused
+    'REFRESH_TOKEN_REUSE_PROTECTION': True,
+    # Grace period: seconds the old refresh token remains valid after rotation
+    'REFRESH_TOKEN_GRACE_PERIOD_SECONDS': 0,
+    # Refresh token lifetime in seconds (14 days)
+    'REFRESH_TOKEN_EXPIRE_SECONDS': 1209600,
+    # Access token lifetime in seconds (1 hour)
+    'ACCESS_TOKEN_EXPIRE_SECONDS': 3600,
+}
