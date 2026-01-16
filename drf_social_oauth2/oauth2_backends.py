@@ -5,10 +5,9 @@ This module provides custom OAuth2 backend classes that extend the
 django-oauth-toolkit backends to support social authentication.
 """
 
-from typing import Any, Tuple
+from typing import Any
 
 from django.http import HttpRequest
-
 from oauth2_provider.settings import oauth2_settings
 
 from drf_social_oauth2.oauth2_endpoints import SocialTokenServer
@@ -37,13 +36,13 @@ class KeepRequestCore(oauth2_settings.OAUTH2_BACKEND_CLASS):
         Raises:
             TypeError: If server_class is not an instance of SocialTokenServer.
         """
-        super(KeepRequestCore, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         if not isinstance(self.server, SocialTokenServer):
             raise TypeError("server_class must be an instance of 'SocialTokenServer'")
 
     def create_token_response(
         self, request: HttpRequest
-    ) -> Tuple[str, dict, str, int]:
+    ) -> tuple[str, dict, str, int]:
         """Create a token response while preserving the Django request.
 
         A wrapper method that calls create_token_response on the server_class
@@ -56,4 +55,4 @@ class KeepRequestCore(oauth2_settings.OAUTH2_BACKEND_CLASS):
             A tuple of (url, headers, body, status).
         """
         self.server.set_request_object(request)
-        return super(KeepRequestCore, self).create_token_response(request)
+        return super().create_token_response(request)

@@ -1,22 +1,13 @@
-import os
-from json import loads
 from datetime import datetime, timezone
+from json import loads
 
 import pytest
-
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'drf_social_oauth2.test_settings')
-
-from django import setup
-
-setup()
-
 from django.contrib.auth.models import User
+from oauth2_provider.models import AccessToken, Application
 
-from oauth2_provider.models import Application, AccessToken
-
-from drf_social_oauth2.oauth2_endpoints import SocialTokenServer
 from drf_social_oauth2 import generate_token
-from tests.drf_social_oauth2.drf_fixtures import application, user, save
+from drf_social_oauth2.oauth2_endpoints import SocialTokenServer
+from tests.conftest import save
 
 
 def assign_request_application(request):

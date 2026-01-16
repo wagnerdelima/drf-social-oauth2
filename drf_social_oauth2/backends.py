@@ -5,13 +5,12 @@ This module provides custom social authentication backends for various providers
 including Django's own OAuth2 backend, Google Identity, and LinkedIn OpenID.
 """
 
-from typing import Any, Dict, Optional
+from typing import Any
 
 from django.urls import reverse
-
-from social_core.backends.oauth import BaseOAuth2
 from social_core.backends.google import GooglePlusAuth
 from social_core.backends.linkedin import LinkedinOpenIdConnect
+from social_core.backends.oauth import BaseOAuth2
 
 from drf_social_oauth2.settings import (
     DRFSO2_PROPRIETARY_BACKEND_NAME,
@@ -54,7 +53,7 @@ class GoogleIdentityBackend(GooglePlusAuth):
 
     def user_data(
         self, access_token: str, *args: Any, **kwargs: Any
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Fetch user data from Google's tokeninfo endpoint.
 
         Args:
@@ -65,7 +64,7 @@ class GoogleIdentityBackend(GooglePlusAuth):
         Returns:
             Dictionary containing user information from Google.
         """
-        response: Dict[str, Any] = self.get_json(
+        response: dict[str, Any] = self.get_json(
             "https://www.googleapis.com/oauth2/v3/tokeninfo",
             params={"id_token": access_token},
         )
@@ -81,7 +80,7 @@ class LinkedInOpenIDUserInfo(LinkedinOpenIdConnect):
 
     def user_data(
         self, access_token: str, *args: Any, **kwargs: Any
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Fetch user data from LinkedIn's userinfo endpoint.
 
         Args:
@@ -92,14 +91,14 @@ class LinkedInOpenIDUserInfo(LinkedinOpenIdConnect):
         Returns:
             Dictionary containing user information from LinkedIn.
         """
-        response: Dict[str, Any] = self.get_json(
+        response: dict[str, Any] = self.get_json(
             "https://api.linkedin.com/v2/userinfo",
             headers={"Authorization": f"Bearer {access_token}"},
         )
         self.process_error(response)
         return response
 
-    def get_user_details(self, response: Dict[str, Any]) -> Dict[str, Optional[str]]:
+    def get_user_details(self, response: dict[str, Any]) -> dict[str, str | None]:
         """Extract user details from the LinkedIn response.
 
         Args:

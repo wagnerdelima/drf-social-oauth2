@@ -1,13 +1,26 @@
-from setuptools import setup, find_packages
+import re
 import sys
+
+from setuptools import find_packages, setup
 
 if sys.version_info < (3, 10):
     raise SystemError('This package requires Python 3.10 or above.')
 
+
+def get_version():
+    """Read version from drf_social_oauth2/__init__.py without importing."""
+    with open('drf_social_oauth2/__init__.py') as f:
+        content = f.read()
+    match = re.search(r"^__version__\s*=\s*['\"]([^'\"]+)['\"]", content, re.MULTILINE)
+    if match:
+        return match.group(1)
+    raise RuntimeError('Unable to find version string.')
+
+
 setup(
     name='drf-social-oauth2',
-    version=__import__('drf_social_oauth2').__version__,
-    description=__import__('drf_social_oauth2').__doc__,
+    version=get_version(),
+    description='OAuth2 social authentication for Django REST Framework',
     long_description=open('README.rst').read(),
     author='Wagner de Lima',
     author_email='waglds@gmail.com',

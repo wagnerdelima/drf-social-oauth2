@@ -8,18 +8,15 @@ social authentication token conversion.
 from logging import getLogger
 
 from django.urls import reverse
-
 from oauthlib.common import Request
 from oauthlib.oauth2.rfc6749 import errors
 from oauthlib.oauth2.rfc6749.grant_types.refresh_token import RefreshTokenGrant
-
-from social_django.views import NAMESPACE
-from social_django.utils import load_backend, load_strategy
 from social_core.exceptions import MissingBackend, SocialAuthBaseException
 from social_core.utils import requests
+from social_django.utils import load_backend, load_strategy
+from social_django.views import NAMESPACE
 
 from drf_social_oauth2.settings import DRFSO2_URL_NAMESPACE
-
 
 log = getLogger(__name__)
 

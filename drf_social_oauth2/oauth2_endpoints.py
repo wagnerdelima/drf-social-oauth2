@@ -6,14 +6,14 @@ social authentication token conversion.
 """
 
 import logging
-from typing import Any, Callable, Dict, Optional, Tuple
+from collections.abc import Callable
+from typing import Any
 
 from django.http import HttpRequest
-
 from oauthlib.common import Request
+from oauthlib.oauth2.rfc6749.endpoints.base import catch_errors_and_unavailability
 from oauthlib.oauth2.rfc6749.endpoints.token import TokenEndpoint
 from oauthlib.oauth2.rfc6749.tokens import BearerToken
-from oauthlib.oauth2.rfc6749.endpoints.base import catch_errors_and_unavailability
 
 from drf_social_oauth2.oauth2_grants import SocialTokenGrant
 
@@ -34,9 +34,9 @@ class SocialTokenServer(TokenEndpoint):
     def __init__(
         self,
         request_validator: Any,
-        token_generator: Optional[Callable[..., str]] = None,
-        token_expires_in: Optional[int] = None,
-        refresh_token_generator: Optional[Callable[..., str]] = None,
+        token_generator: Callable[..., str] | None = None,
+        token_expires_in: int | None = None,
+        refresh_token_generator: Callable[..., str] | None = None,
         **kwargs: Any
     ) -> None:
         """Construct a social token server.
@@ -49,7 +49,7 @@ class SocialTokenServer(TokenEndpoint):
             refresh_token_generator: A function to generate a refresh token.
             **kwargs: Extra parameters passed to endpoint constructors.
         """
-        self._params: Dict[str, Any] = {}
+        self._params: dict[str, Any] = {}
         self.request_validator = request_validator
         refresh_grant = SocialTokenGrant(request_validator)
         bearer = BearerToken(
@@ -81,7 +81,7 @@ class SocialTokenServer(TokenEndpoint):
             raise TypeError("request must be an instance of 'django.http.HttpRequest'")
         self._params['http_request'] = request
 
-    def pop_request_object(self) -> Optional[HttpRequest]:
+    def pop_request_object(self) -> HttpRequest | None:
         """Retrieve and remove the stored Django request object.
 
         This is called internally by create_token_response to fetch the
@@ -97,10 +97,10 @@ class SocialTokenServer(TokenEndpoint):
         self,
         uri: str,
         http_method: str = 'GET',
-        body: Optional[str] = None,
-        headers: Optional[Dict[str, str]] = None,
-        credentials: Optional[Dict[str, Any]] = None
-    ) -> Tuple[Dict[str, str], str, int]:
+        body: str | None = None,
+        headers: dict[str, str] | None = None,
+        credentials: dict[str, Any] | None = None
+    ) -> tuple[dict[str, str], str, int]:
         """Create a token response for the given request.
 
         Extracts the grant_type and routes to the designated handler.
@@ -134,9 +134,9 @@ class SocialTokenServer(TokenEndpoint):
         self,
         uri: str,
         http_method: str = 'GET',
-        body: Optional[str] = None,
-        headers: Optional[Dict[str, str]] = None,
-        credentials: Optional[Dict[str, Any]] = None
+        body: str | None = None,
+        headers: dict[str, str] | None = None,
+        credentials: dict[str, Any] | None = None
     ) -> Request:
         """Assemble an oauthlib Request with the Django request attached.
 
