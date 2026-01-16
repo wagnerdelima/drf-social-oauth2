@@ -53,6 +53,9 @@ setup(
         'social-auth-app-django>=5.0.0',
         'PyJWT>=2.8.0'
     ],
+    package_data={
+        'drf_social_oauth2': ['py.typed'],
+    },
     include_package_data=True,
     zip_safe=False,
 )
