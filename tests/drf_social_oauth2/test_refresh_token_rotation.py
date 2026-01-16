@@ -244,7 +244,7 @@ class TestRefreshTokenReuseProtection:
         access_tokens = []
         refresh_tokens = []
 
-        for i in range(3):
+        for _ in range(3):
             access_token = AccessToken.objects.create(
                 user=user,
                 application=application,
@@ -294,6 +294,7 @@ class TestRefreshTokenRotationIntegration:
         """Test that rotation settings are properly applied."""
         # Re-import to get fresh settings
         from importlib import reload
+
         from drf_social_oauth2 import settings as drf_settings
         reload(drf_settings)
 
