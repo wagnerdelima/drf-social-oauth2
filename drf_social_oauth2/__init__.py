@@ -10,7 +10,7 @@ Instagram, Github, Twitter and a ton more!
 from secrets import SystemRandom
 from typing import Any
 
-__version__ = '3.1.0'
+__version__ = '3.2.0'
 
 __all__ = [
     '__version__',
