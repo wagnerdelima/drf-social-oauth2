@@ -1,22 +1,14 @@
-import os
 import uuid
 from datetime import datetime, timedelta, timezone
 from unittest.mock import PropertyMock
 
-from pytest import fixture
-
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'drf_social_oauth2.test_settings')
-
-from django import setup
-
-setup()
-
 from django.urls import reverse
 from oauth2_provider.models import AccessToken, RefreshToken
+from pytest import fixture
 from rest_framework.test import APIClient
 
 from drf_social_oauth2.views import get_application
-from tests.drf_social_oauth2.drf_fixtures import save
+from tests.conftest import save
 
 
 def generate_token():
