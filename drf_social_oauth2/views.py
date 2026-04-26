@@ -352,7 +352,7 @@ class InvalidateSessions(APIView):
                 status=HTTP_400_BAD_REQUEST,
             )
 
-        return Response({}, status=HTTP_204_NO_CONTENT)
+        return Response(status=HTTP_204_NO_CONTENT)
 
 
 class InvalidateRefreshTokens(APIView):
@@ -399,7 +399,7 @@ class InvalidateRefreshTokens(APIView):
                 },
                 status=HTTP_400_BAD_REQUEST,
             )
-        return Response({}, HTTP_204_NO_CONTENT)
+        return Response(status=HTTP_204_NO_CONTENT)
 
 
 class DisconnectBackendView(APIView):
