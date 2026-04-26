@@ -1,6 +1,27 @@
 Change log
 ==========
 
+3.4.1 - 2026-04-26
+------------------
+
+## What's Changed
+* Return ``HTTP 409 Conflict`` instead of ``HTTP 500`` when ``/convert-token`` collides with an existing local user that shares the same email as the social account (`#57 <https://github.com/wagnerdelima/drf-social-oauth2/issues/57>`_).
+
+  * New ``drf_social_oauth2.views._is_email_already_exists`` helper detects unique-email-constraint violations across PostgreSQL, MySQL, and SQLite, and walks the exception chain so it still matches when an ``IntegrityError`` is wrapped in a ``TransactionManagementError`` by a surrounding atomic block.
+  * ``ConvertTokenView`` now catches both ``IntegrityError`` and ``TransactionManagementError`` and returns a structured body the frontend can dispatch on:
+
+    .. code-block:: json
+
+        {
+          "code": "email_already_exists",
+          "detail": "A user with this email already exists for a different authentication method.",
+          "backend": "google-oauth2"
+        }
+
+  * Recommended companion config: add ``social_core.pipeline.social_auth.associate_by_email`` to ``SOCIAL_AUTH_PIPELINE`` (before ``create_user``) so the duplicate-email path *associates* the social identity with the existing local user rather than throwing. Only enable this for backends that verify email ownership (e.g. Google, Facebook).
+* Move JWT activation logic out of ``settings.py`` and into a new ``DRFSocialOauth2Config.ready()`` AppConfig hook, so the activation runs once after Django is fully initialized. Opt in by setting ``ACTIVATE_JWT = True`` in your project settings; see the installation docs for the response shape and caveats.
+* ``InvalidateSessions`` and ``InvalidateRefreshTokens`` no longer emit a ``Content-Type`` header on their ``HTTP 204 No Content`` responses (empty dict removed from the ``Response`` call).
+
 3.3.0 - 2026-04-26
 ------------------
 
