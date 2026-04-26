@@ -95,3 +95,49 @@ When refresh token rotation is enabled, your client application must:
 - **Detects theft**: If an attacker uses a stolen refresh token after the legitimate user has already used it,
   the reuse is detected and all tokens are revoked.
 - **Reduces attack window**: The grace period can be set to a small value to minimize the window of vulnerability.
+
+Google Email Alias Normalization
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Google treats ``@gmail.com`` and ``@googlemail.com`` as aliases of the same mailbox — the
+``@googlemail.com`` form is still used in some regions (e.g. Germany, the UK). However,
+``social_core``'s default Google backends derive the social UID from the email address, so
+the same Google user signing in once with ``foo@gmail.com`` and once with
+``foo@googlemail.com`` would otherwise produce two distinct ``UserSocialAuth`` records and
+two Django users.
+
+drf-social-oauth2 normalizes ``@googlemail.com`` to ``@gmail.com`` before the UID is computed,
+so both forms map to the same Django user.
+
+**Automatic for GoogleIdentityBackend:**
+
+If you authenticate with ``drf_social_oauth2.backends.GoogleIdentityBackend`` (the OpenID
+Connect backend recommended in the :doc:`integration` guide), normalization is applied
+automatically — no extra configuration is required.
+
+**Pipeline step for other Google backends:**
+
+If you use a stock ``python-social-auth`` Google backend such as
+``social_core.backends.google.GoogleOAuth2``, add the
+``drf_social_oauth2.pipeline.normalize_google_email`` step to your ``SOCIAL_AUTH_PIPELINE``,
+**before** ``social_core.pipeline.social_auth.social_uid``:
+
+.. code-block:: python
+
+    SOCIAL_AUTH_PIPELINE = (
+        'social_core.pipeline.social_auth.social_details',
+        # Normalize @googlemail.com -> @gmail.com before the UID is computed.
+        'drf_social_oauth2.pipeline.normalize_google_email',
+        'social_core.pipeline.social_auth.social_uid',
+        'social_core.pipeline.social_auth.auth_allowed',
+        'social_core.pipeline.social_auth.social_user',
+        'social_core.pipeline.user.get_username',
+        'social_core.pipeline.user.create_user',
+        'social_core.pipeline.social_auth.associate_user',
+        'social_core.pipeline.social_auth.load_extra_data',
+        'social_core.pipeline.user.user_details',
+    )
+
+The step is a no-op for non-Google backends (matched by a backend name starting with
+``google``) and for emails that don't use the ``@googlemail.com`` alias, so it is safe to
+leave enabled in mixed-provider deployments.
