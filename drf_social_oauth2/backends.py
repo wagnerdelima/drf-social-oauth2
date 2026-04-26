@@ -7,7 +7,7 @@ including Django's own OAuth2 backend, Google Identity, and LinkedIn OpenID.
 
 from typing import Any
 
-from django.urls import reverse
+from django.urls import reverse_lazy
 from social_core.backends.google import GooglePlusAuth
 from social_core.backends.linkedin import LinkedinOpenIdConnect
 from social_core.backends.oauth import BaseOAuth2
@@ -60,10 +60,14 @@ class DjangoOAuth2(BaseOAuth2):
     """
 
     name: str = DRFSO2_PROPRIETARY_BACKEND_NAME
-    AUTHORIZATION_URL: str = reverse(
+    # reverse_lazy defers URL resolution until first use so this module can be
+    # imported before Django's URL conf has been loaded — eager reverse() here
+    # raised NoReverseMatch during test collection (and any early import) when
+    # the configured namespace isn't registered yet.
+    AUTHORIZATION_URL = reverse_lazy(
         f'{DRFSO2_URL_NAMESPACE}:authorize' if DRFSO2_URL_NAMESPACE else 'authorize'
     )
-    ACCESS_TOKEN_URL: str = reverse(
+    ACCESS_TOKEN_URL = reverse_lazy(
         f'{DRFSO2_URL_NAMESPACE}:token' if DRFSO2_URL_NAMESPACE else 'token'
     )
 
