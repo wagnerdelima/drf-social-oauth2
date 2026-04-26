@@ -2,12 +2,14 @@ import uuid
 from datetime import datetime, timedelta, timezone
 from unittest.mock import PropertyMock
 
+from django.db import IntegrityError
+from django.db.transaction import TransactionManagementError
 from django.urls import reverse
 from oauth2_provider.models import AccessToken, RefreshToken
-from pytest import fixture
+from pytest import fixture, mark
 from rest_framework.test import APIClient
 
-from drf_social_oauth2.views import get_application
+from drf_social_oauth2.views import _is_email_already_exists, get_application
 from tests.conftest import save
 
 
@@ -112,6 +114,91 @@ def test_convert_token_endpoint(mocker, client_api, user, application):
     assert 'expires_in' in response.data
     assert 'token_type' in response.data
     assert 'scope' in response.data
+
+
+@mark.parametrize(
+    'message',
+    [
+        'duplicate key value violates unique constraint "auth_user_email_key"\n'
+        'DETAIL:  Key (email)=(foo@bar.com) already exists.',
+        "(1062, \"Duplicate entry 'foo@bar.com' for key 'auth_user.email'\")",
+        'UNIQUE constraint failed: auth_user.email',
+    ],
+)
+def test_is_email_already_exists_matches_db_backends(message):
+    assert _is_email_already_exists(IntegrityError(message))
+
+
+def test_is_email_already_exists_walks_exception_chain():
+    inner = IntegrityError('UNIQUE constraint failed: auth_user.email')
+    try:
+        try:
+            raise inner
+        except IntegrityError as e:
+            raise TransactionManagementError('atomic block aborted') from e
+    except TransactionManagementError as outer:
+        assert _is_email_already_exists(outer)
+
+
+def test_is_email_already_exists_ignores_unrelated_violations():
+    assert not _is_email_already_exists(
+        IntegrityError('UNIQUE constraint failed: auth_user.username')
+    )
+    assert not _is_email_already_exists(IntegrityError('connection refused'))
+
+
+def test_convert_token_endpoint_returns_409_on_duplicate_email(
+    mocker, client_api, application
+):
+    mocker.patch(
+        'drf_social_oauth2.oauth2_endpoints.SocialTokenServer.create_token_response',
+        side_effect=IntegrityError(
+            'duplicate key value violates unique constraint "auth_user_email_key"\n'
+            'DETAIL:  Key (email)=(foo@bar.com) already exists.'
+        ),
+    )
+
+    response = client_api.post(
+        reverse('convert_token'),
+        data={
+            'grant_type': 'convert_token',
+            'backend': 'google-oauth2',
+            'client_id': 'id',
+            'token': 'token',
+        },
+        format='json',
+    )
+
+    assert response.status_code == 409
+    assert response.data['code'] == 'email_already_exists'
+    assert response.data['backend'] == 'google-oauth2'
+    assert 'detail' in response.data
+
+
+def test_convert_token_endpoint_returns_409_when_integrity_error_is_wrapped(
+    mocker, client_api, application
+):
+    inner = IntegrityError('UNIQUE constraint failed: auth_user.email')
+    wrapped = TransactionManagementError('atomic block aborted')
+    wrapped.__cause__ = inner
+    mocker.patch(
+        'drf_social_oauth2.oauth2_endpoints.SocialTokenServer.create_token_response',
+        side_effect=wrapped,
+    )
+
+    response = client_api.post(
+        reverse('convert_token'),
+        data={
+            'grant_type': 'convert_token',
+            'backend': 'google-oauth2',
+            'client_id': 'id',
+            'token': 'token',
+        },
+        format='json',
+    )
+
+    assert response.status_code == 409
+    assert response.data['code'] == 'email_already_exists'
 
 
 def test_revoke_token_endpoint_with_no_post_params(client_api, user):
