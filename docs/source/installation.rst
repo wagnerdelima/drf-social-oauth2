@@ -117,4 +117,64 @@ The following are settings available for drf-social-oauth2:
 
 - ``DRFSO2_PROPRIETARY_BACKEND_NAME``: name of your OAuth2 social backend (e.g ``"Facebook"``), defaults to ``"Django"``
 - ``DRFSO2_URL_NAMESPACE``: namespace for reversing URLs
-- ``ACTIVATE_JWT``: If set to True the access and refresh tokens will be JWTed. Default is False.
+- ``ACTIVATE_JWT``: if set to True, both access and refresh tokens are issued as JWTs signed with ``SECRET_KEY`` (HS256). Default is False. See `Activating JWT tokens`_ below.
+
+
+Activating JWT tokens
+---------------------
+
+To make ``/auth/token`` and ``/auth/convert-token`` issue JWT-encoded access and
+refresh tokens, set ``ACTIVATE_JWT = True`` in your Django settings:
+
+.. code-block:: python
+
+    # settings.py
+    ACTIVATE_JWT = True
+
+That is the only thing you need to do — provided ``'drf_social_oauth2'`` is in
+``INSTALLED_APPS``, the package's ``AppConfig.ready()`` hook wires the JWT
+generators into django-oauth-toolkit at startup.
+
+**What the response looks like**
+
+The ``token_type`` field stays ``"Bearer"`` — that is the OAuth2 transport, not
+the token format. The JWT lives in the ``access_token`` (and ``refresh_token``)
+value itself: three dot-separated base64url segments.
+
+.. code-block:: json
+
+    {
+        "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbiI6Ii4uLiJ9.SIGNATURE",
+        "expires_in": 3600,
+        "token_type": "Bearer",
+        "scope": "read write",
+        "refresh_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbiI6Ii4uLiJ9.SIGNATURE"
+    }
+
+You can verify the token format with PyJWT:
+
+.. code-block:: python
+
+    import jwt
+    from django.conf import settings
+
+    decoded = jwt.decode(access_token, settings.SECRET_KEY, algorithms=['HS256'])
+    # {'token': '<random 30-char opaque token>'}
+
+**Using the token in subsequent requests**
+
+Send it as a normal Bearer credential:
+
+.. code-block:: text
+
+    Authorization: Bearer eyJhbGciOi...
+
+Do **not** include the backend name in the header (e.g. ``Bearer facebook eyJ...``);
+that format is rejected by ``OAuth2Authentication``.
+
+**Caveat: explicit overrides win**
+
+If your ``OAUTH2_PROVIDER`` dict explicitly sets ``ACCESS_TOKEN_GENERATOR`` or
+``REFRESH_TOKEN_GENERATOR``, those values take precedence and ``ACTIVATE_JWT``
+becomes a no-op. Either remove those keys or point them at
+``'drf_social_oauth2.generate_token'`` yourself.

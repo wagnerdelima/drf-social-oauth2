@@ -14,6 +14,7 @@ from typing import Any
 
 from django.contrib.auth.models import AbstractBaseUser
 from django.db import IntegrityError
+from django.db.transaction import TransactionManagementError
 from django.urls import reverse
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
@@ -33,6 +34,7 @@ from rest_framework.response import Response
 from rest_framework.status import (
     HTTP_204_NO_CONTENT,
     HTTP_400_BAD_REQUEST,
+    HTTP_409_CONFLICT,
     HTTP_500_INTERNAL_SERVER_ERROR,
 )
 from rest_framework.views import APIView
@@ -50,6 +52,34 @@ from drf_social_oauth2.serializers import (
 )
 
 logger = logging.getLogger(__package__)
+
+
+_EMAIL_UNIQUE_VIOLATION_SIGNATURES = (
+    'duplicate key value violates unique constraint',  # PostgreSQL
+    'duplicate entry',                                 # MySQL
+    'unique constraint failed',                        # SQLite
+)
+
+
+def _is_email_already_exists(exc: BaseException) -> bool:
+    """Return True if the exception represents a duplicate-email DB error.
+
+    Matches PostgreSQL, MySQL, and SQLite unique-constraint signatures and
+    walks the exception chain so we still detect the case when the original
+    IntegrityError has been wrapped (e.g. into TransactionManagementError by
+    a surrounding atomic block).
+    """
+    seen: set[int] = set()
+    current: BaseException | None = exc
+    while current is not None and id(current) not in seen:
+        seen.add(id(current))
+        message = str(current).lower()
+        if 'email' in message and any(
+            sig in message for sig in _EMAIL_UNIQUE_VIOLATION_SIGNATURES
+        ):
+            return True
+        current = current.__cause__ or current.__context__
+    return False
 
 
 def get_application(validated_data: dict[str, Any]) -> Application | None:
@@ -233,17 +263,23 @@ class ConvertTokenView(CsrfExemptMixin, OAuthLibMixin, APIView):
                 {'access_denied': 'The token you provided is invalid or expired.'},
                 status=HTTP_400_BAD_REQUEST,
             )
-        except IntegrityError as e:
-            if 'email' in str(e) and 'already exists' in str(e):
+        except (IntegrityError, TransactionManagementError) as e:
+            if _is_email_already_exists(e):
                 return Response(
-                    {'error': 'A user with this email already exists.'},
-                    status=HTTP_400_BAD_REQUEST,
+                    {
+                        'code': 'email_already_exists',
+                        'detail': (
+                            'A user with this email already exists for a '
+                            'different authentication method.'
+                        ),
+                        'backend': serializer.validated_data.get('backend'),
+                    },
+                    status=HTTP_409_CONFLICT,
                 )
-            else:
-                return Response(
-                    {'error': 'Database error.'},
-                    status=HTTP_400_BAD_REQUEST,
-                )
+            return Response(
+                {'error': 'Database error.'},
+                status=HTTP_400_BAD_REQUEST,
+            )
         except Exception:
             logger.exception('Unexpected error during token conversion')
             return Response(
@@ -352,7 +388,7 @@ class InvalidateSessions(APIView):
                 status=HTTP_400_BAD_REQUEST,
             )
 
-        return Response({}, status=HTTP_204_NO_CONTENT)
+        return Response(status=HTTP_204_NO_CONTENT)
 
 
 class InvalidateRefreshTokens(APIView):
@@ -399,7 +435,7 @@ class InvalidateRefreshTokens(APIView):
                 },
                 status=HTTP_400_BAD_REQUEST,
             )
-        return Response({}, HTTP_204_NO_CONTENT)
+        return Response(status=HTTP_204_NO_CONTENT)
 
 
 class DisconnectBackendView(APIView):

@@ -9,7 +9,8 @@ Available settings:
         Default: "Django"
     DRFSO2_URL_NAMESPACE: URL namespace for drf-social-oauth2 endpoints.
         Default: "drf"
-    ACTIVATE_JWT: If True, enables JWT token generation.
+    ACTIVATE_JWT: If True, enables JWT token generation. Activation is wired
+        in ``drf_social_oauth2.apps.DRFSocialOauth2Config.ready()``.
         Default: False
 
 Refresh Token Rotation settings (via OAUTH2_PROVIDER dict):
@@ -33,7 +34,6 @@ Example configuration in settings.py:
 """
 
 from django.conf import settings
-from oauth2_provider import settings as oauth2_settings
 
 # Name for the proprietary OAuth2 backend
 DRFSO2_PROPRIETARY_BACKEND_NAME: str = getattr(
@@ -42,17 +42,6 @@ DRFSO2_PROPRIETARY_BACKEND_NAME: str = getattr(
 
 # URL namespace for drf-social-oauth2 endpoints
 DRFSO2_URL_NAMESPACE: str = getattr(settings, 'DRFSO2_URL_NAMESPACE', 'drf')
-
-
-# Configure JWT token generation if enabled
-if getattr(settings, 'ACTIVATE_JWT', False):
-    oauth2_settings.DEFAULTS[
-        'ACCESS_TOKEN_GENERATOR'
-    ] = 'drf_social_oauth2.generate_token'
-
-    oauth2_settings.DEFAULTS[
-        'REFRESH_TOKEN_GENERATOR'
-    ] = 'drf_social_oauth2.generate_token'
 
 
 # Refresh Token Rotation Configuration
