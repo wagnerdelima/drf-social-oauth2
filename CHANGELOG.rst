@@ -1,6 +1,18 @@
 Change log
 ==========
 
+3.3.0 - 2026-04-26
+------------------
+
+## What's Changed
+* Fix duplicate Django users created when the same Google account signs in under both ``@gmail.com`` and ``@googlemail.com`` aliases (`#253 <https://github.com/wagnerdelima/drf-social-oauth2/issues/253>`_).
+
+  * ``drf_social_oauth2.backends.GoogleIdentityBackend`` now normalizes ``@googlemail.com`` to ``@gmail.com`` automatically in ``get_user_details``.
+  * New ``drf_social_oauth2.pipeline.normalize_google_email`` pipeline step for users on stock python-social-auth Google backends (e.g. ``social_core.backends.google.GoogleOAuth2``). Insert it before ``social_core.pipeline.social_auth.social_uid`` in ``SOCIAL_AUTH_PIPELINE``.
+  * New ``drf_social_oauth2.backends.normalize_google_email_address`` helper.
+
+See the :doc:`customization` guide for configuration details.
+
 2.1.1 - 2023-04-26
 ------------------
 
