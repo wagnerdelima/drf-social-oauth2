@@ -26,7 +26,7 @@ setup(
     author_email='waglds@gmail.com',
     url='https://github.com/wagnerdelima/drf-social-oauth2',
     license='MIT',
-    packages=find_packages(),
+    packages=find_packages(exclude=['tests', 'tests.*']),
     python_requires='>=3.10',
     classifiers=[
         'Development Status :: 5 - Production/Stable',
