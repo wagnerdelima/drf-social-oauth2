@@ -67,6 +67,15 @@ DATABASES = {
 DRFSO2_PROPRIETARY_BACKEND_NAME = 'Django'
 DRFSO2_URL_NAMESPACE = 'drf'
 
+# social_django.utils.load_backend resolves a backend name (e.g. 'google-identity')
+# by walking AUTHENTICATION_BACKENDS, so end-to-end tests that exercise the real
+# social pipeline need this populated. Mirrors a typical production wiring.
+AUTHENTICATION_BACKENDS = (
+    'drf_social_oauth2.backends.GoogleIdentityBackend',
+    'drf_social_oauth2.backends.DjangoOAuth2',
+    'django.contrib.auth.backends.ModelBackend',
+)
+
 ROOT_URLCONF = 'drf_social_oauth2.urls'
 
 USE_TZ = True
