@@ -194,21 +194,85 @@ In order to authenticate with Open ID, proceed as follows:
     SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = <your app id goes here>
     SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = <your app secret goes here>
 
+    # REQUIRED. The Google OAuth client ID(s) whose ID tokens this application
+    # accepts. See "Validating the ID token audience" below.
+    SOCIAL_AUTH_GOOGLE_IDENTITY_AUDIENCE = <your google oauth client id goes here>
+
     # Define SOCIAL_AUTH_GOOGLE_OAUTH2_SCOPE to get extra permissions from Google.
     SOCIAL_AUTH_GOOGLE_OAUTH2_SCOPE = [
         'https://www.googleapis.com/auth/userinfo.email',
         'https://www.googleapis.com/auth/userinfo.profile',
     ]
 
+.. _google-identity-audience:
+
+Validating the ID token audience
+""""""""""""""""""""""""""""""""
+
+Google's tokeninfo endpoint tells you that an ID token is validly signed and
+unexpired. It cannot tell you that the token was issued to *your* application,
+because it has no idea which application is asking. Checking that is the
+relying party's job, and ``GoogleIdentityBackend`` does it by comparing the
+token's ``aud`` claim against the client ID(s) you configure.
+
+This matters because anyone can register a Google OAuth client for free. If the
+audience were not checked, an attacker could stand up their own "Sign in with
+Google" page, have a victim sign in there once, and replay the resulting ID
+token — which carries the victim's email address — against your
+``/convert-token/`` endpoint. Since the social UID is derived from that email,
+your application would issue a real access token for the victim's account. This
+was `GHSA-c6x8-38vf-4p8r
+<https://github.com/wagnerdelima/drf-social-oauth2/security/advisories/GHSA-c6x8-38vf-4p8r>`_,
+fixed in 3.4.2.
+
+The accepted audience is read from the first of these settings that is set:
+
+1. ``SOCIAL_AUTH_GOOGLE_IDENTITY_AUDIENCE``
+2. ``SOCIAL_AUTH_GOOGLE_IDENTITY_KEY``
+3. ``SOCIAL_AUTH_GOOGLE_OAUTH2_KEY``
+
+If none of them is set, the backend raises ``ImproperlyConfigured`` rather than
+accepting the token, because there is nothing to validate against. Note that
+releases up to 3.4.1 documented only ``SOCIAL_AUTH_GOOGLE_OAUTH2_KEY`` for this
+backend, so existing deployments keep working via entry 3 — but prefer setting
+``SOCIAL_AUTH_GOOGLE_IDENTITY_AUDIENCE`` explicitly.
+
+Native apps typically have one client ID per platform, and Google mints each
+platform's ID tokens with that platform's client ID in ``aud``. Pass a list to
+accept all of them:
+
+.. code-block:: python
+
+    SOCIAL_AUTH_GOOGLE_IDENTITY_AUDIENCE = [
+        '<web client id>.apps.googleusercontent.com',
+        '<ios client id>.apps.googleusercontent.com',
+        '<android client id>.apps.googleusercontent.com',
+    ]
+
+Only list client IDs your own organization controls. Every client ID you add is
+an application whose ID tokens are accepted as proof of identity here.
+
+The backend also rejects tokens whose ``iss`` is not Google and tokens whose
+``email_verified`` claim is not true — an unverified address would let a token
+holder claim a mailbox they do not control.
+
 For testing purposes, you can use the id token `id_token` from
 https://developers.google.com/oauthplayground/.
 
     1. Visit the OAuth 2.0 Playground.
     2. Select Google OAuth2 API v2 and authorize for openid.
-    3. Exchange Authorization code for tokens and get access token.
-    4. Use the access token as the token parameter in the /convert-token endpoint.
+    3. Exchange Authorization code for tokens and get an id token.
+    4. Use the id token as the token parameter in the /convert-token endpoint.
 
-If you want to have your open id token validated, copy it and hit this url,
+By default the Playground mints tokens under Google's own Playground client ID,
+so as of 3.4.2 those tokens are rejected with ``access_denied`` — the audience
+does not name your application. This rejection is the audience check working as
+intended, not a misconfiguration. To test with a Playground token, open the
+Playground's settings ("Use your own OAuth credentials") and enter your own
+OAuth client ID and secret, so the token is minted for your application.
+
+If you want to inspect an id token's claims — including the ``aud`` value the
+backend compares against — copy it and hit this url,
 https://oauth2.googleapis.com/tokeninfo?id_token=your_token_here.
 
 To test the configuration settings, execute the following command:

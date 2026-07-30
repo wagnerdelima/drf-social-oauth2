@@ -13,6 +13,17 @@ Available settings:
         in ``drf_social_oauth2.apps.DRFSocialOauth2Config.ready()``.
         Default: False
 
+Google Identity backend settings:
+    SOCIAL_AUTH_GOOGLE_IDENTITY_AUDIENCE: The Google OAuth client ID, or list
+        of client IDs, whose ID tokens this application accepts. Required by
+        ``GoogleIdentityBackend``; it falls back to
+        SOCIAL_AUTH_GOOGLE_IDENTITY_KEY and then
+        SOCIAL_AUTH_GOOGLE_OAUTH2_KEY, and raises ImproperlyConfigured if none
+        is set. Google's tokeninfo endpoint cannot verify that a token was
+        issued to this application, so the backend compares the token's 'aud'
+        claim against this value. See the "Google OpenID Integration" section
+        of the docs.
+
 Refresh Token Rotation settings (via OAUTH2_PROVIDER dict):
     ROTATE_REFRESH_TOKEN: If True, a new refresh token is issued each time
         a refresh token is used. Default: True

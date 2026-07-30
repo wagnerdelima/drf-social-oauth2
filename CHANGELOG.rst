@@ -1,6 +1,27 @@
 Change log
 ==========
 
+3.4.2 - 2026-07-30
+------------------
+
+## Security
+
+* **Fix an authentication bypass in ``GoogleIdentityBackend`` that allowed account takeover** (`GHSA-c6x8-38vf-4p8r <https://github.com/wagnerdelima/drf-social-oauth2/security/advisories/GHSA-c6x8-38vf-4p8r>`_, CWE-287, CVSS 3.1 8.1 High). Affects every release up to and including 3.4.1 that enables the ``google-identity`` backend.
+
+  ``GoogleIdentityBackend.user_data`` forwarded the caller-supplied ``id_token`` to Google's tokeninfo endpoint and trusted the returned claims without checking the token's ``aud`` (audience) claim against the application's own Google OAuth client ID. python-social-auth performs no such check either, so *any* validly-signed Google ID token was accepted — including one minted for an OAuth client the attacker registered. Because the social UID is derived from the token's email address, an attacker who got a victim to sign in once through their own "Sign in with Google" page could replay the resulting token against the unauthenticated ``/convert-token/`` endpoint and receive a real access token for the victim's account, with no knowledge of the victim's credentials.
+
+  * ``GoogleIdentityBackend.validate_id_token_claims`` now rejects tokens whose ``aud`` does not name a configured client ID, whose ``iss`` is not Google, or whose ``email_verified`` claim is not true.
+  * New ``SOCIAL_AUTH_GOOGLE_IDENTITY_AUDIENCE`` setting accepts a client ID or a list of them, for deployments with separate web/iOS/Android clients. It falls back to ``SOCIAL_AUTH_GOOGLE_IDENTITY_KEY`` and then ``SOCIAL_AUTH_GOOGLE_OAUTH2_KEY``, which is what releases up to 3.4.1 documented for this backend — so most existing deployments need no configuration change.
+  * New ``drf_social_oauth2.backends.claim_is_true`` helper, since tokeninfo has returned boolean claims both as JSON booleans and as ``"true"``/``"false"`` strings.
+
+  **Action required.** If you enable the ``google-identity`` backend and set *none* of the three settings above, the backend now raises ``ImproperlyConfigured`` instead of accepting unvalidated tokens. This is deliberate: with no configured client ID there is nothing to validate ``aud`` against. Set ``SOCIAL_AUTH_GOOGLE_IDENTITY_AUDIENCE`` to your application's Google OAuth client ID.
+
+  Also note that ID tokens from Google's OAuth 2.0 Playground are now rejected unless you configure the Playground with your own OAuth credentials, because they are minted under Google's Playground client ID. See :doc:`integration`.
+
+## What's Changed
+
+* Fix ``ImportError`` on install with current dependencies. ``setup.py`` requires ``social-auth-app-django>=5.0.0`` with no upper bound, which now resolves to a release depending on ``social-auth-core>=5.0.0`` — where ``GooglePlusAuth`` (named after a product retired in 2019) no longer exists, so ``drf_social_oauth2.backends`` failed at import time. ``GoogleIdentityBackend`` now extends ``GoogleOAuth2``, which is present across ``social-auth-core`` 4.x and 5.x. Both classes derive from the same ``BaseGoogleOAuth2API``/``BaseOAuth2`` bases and use the same Google endpoints; the ``/convert-token`` flow is unchanged. The differences are ``DEFAULT_SCOPE`` (the retired ``plus.login``/``plus.me`` scopes become ``openid``/``email``/``profile``) and ``EXTRA_DATA``, neither of which the ID token flow consumes.
+
 3.4.1 - 2026-04-26
 ------------------
 

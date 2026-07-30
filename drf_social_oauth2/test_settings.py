@@ -76,6 +76,11 @@ AUTHENTICATION_BACKENDS = (
     'django.contrib.auth.backends.ModelBackend',
 )
 
+# GoogleIdentityBackend rejects ID tokens whose 'aud' claim does not name one of
+# the application's own Google OAuth client IDs, so the backend needs this set to
+# authenticate at all. Mirrors a typical production wiring.
+SOCIAL_AUTH_GOOGLE_IDENTITY_AUDIENCE = 'test'
+
 ROOT_URLCONF = 'drf_social_oauth2.urls'
 
 USE_TZ = True
