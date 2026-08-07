@@ -7,9 +7,11 @@ social authentication token conversion.
 
 import logging
 from collections.abc import Callable
+from contextvars import ContextVar
 from typing import Any
 
 from django.http import HttpRequest
+from oauth2_provider.scopes import get_scopes_backend
 from oauthlib.common import Request
 from oauthlib.oauth2.rfc6749.endpoints.base import catch_errors_and_unavailability
 from oauthlib.oauth2.rfc6749.endpoints.token import TokenEndpoint
@@ -19,6 +21,17 @@ from drf_social_oauth2.oauth2_grants import SocialTokenGrant
 
 log = logging.getLogger(__name__)
 
+# django-oauth-toolkit's OAuthLibMixin caches its oauthlib core — and with it
+# this module's SocialTokenServer — per view class, so a single server
+# instance is shared by every request the process handles. Storing the Django
+# request on the instance therefore raced under threaded servers: two
+# concurrent conversions could swap request objects (one social login running
+# with another user's session/META) or pop None. A ContextVar is isolated per
+# thread/async context, so each request only ever sees its own value.
+_django_request: ContextVar[HttpRequest | None] = ContextVar(
+    'drf_social_oauth2_django_request', default=None
+)
+
 
 class SocialTokenServer(TokenEndpoint):
     """OAuth2 token endpoint for social authentication token conversion.
@@ -27,7 +40,6 @@ class SocialTokenServer(TokenEndpoint):
     OAuth2 access tokens. Use this with the KeepRequestCore backend class.
 
     Attributes:
-        _params: Internal dictionary for storing request parameters.
         request_validator: The OAuth2 request validator instance.
     """
 
@@ -49,7 +61,6 @@ class SocialTokenServer(TokenEndpoint):
             refresh_token_generator: A function to generate a refresh token.
             **kwargs: Extra parameters passed to endpoint constructors.
         """
-        self._params: dict[str, Any] = {}
         self.request_validator = request_validator
         refresh_grant = SocialTokenGrant(request_validator)
         bearer = BearerToken(
@@ -69,7 +80,9 @@ class SocialTokenServer(TokenEndpoint):
         """Store the Django request object for later use.
 
         This should be called by the KeepRequestCore backend class before
-        calling create_token_response.
+        calling create_token_response. The request is stored in a ContextVar
+        rather than on the (process-wide, shared) server instance so that
+        concurrent requests cannot observe each other's value.
 
         Args:
             request: The Django HttpRequest object.
@@ -79,18 +92,20 @@ class SocialTokenServer(TokenEndpoint):
         """
         if not isinstance(request, HttpRequest):
             raise TypeError("request must be an instance of 'django.http.HttpRequest'")
-        self._params['http_request'] = request
+        _django_request.set(request)
 
     def pop_request_object(self) -> HttpRequest | None:
         """Retrieve and remove the stored Django request object.
 
         This is called internally by create_token_response to fetch the
-        Django request object and clean up the class instance.
+        Django request object and clean up after itself.
 
         Returns:
             The stored HttpRequest object, or None if not set.
         """
-        return self._params.pop('http_request', None)
+        request = _django_request.get()
+        _django_request.set(None)
+        return request
 
     @catch_errors_and_unavailability
     def create_token_response(
@@ -151,7 +166,10 @@ class SocialTokenServer(TokenEndpoint):
             An oauthlib Request object with django_request attribute set.
         """
         request = Request(uri, http_method=http_method, body=body, headers=headers)
-        request.scopes = ['read', 'write']
+        # Honour the project's configured scopes (OAUTH2_PROVIDER['SCOPES'] /
+        # DEFAULT_SCOPES) instead of hardcoding read/write, which broke
+        # deployments with custom scope sets.
+        request.scopes = get_scopes_backend().get_default_scopes()
         request.extra_credentials = credentials
         # Make sure we consume the django request object
         request.django_request = self.pop_request_object()

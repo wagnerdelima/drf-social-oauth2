@@ -4,7 +4,7 @@ import sys
 from setuptools import find_packages, setup
 
 if sys.version_info < (3, 10):
-    raise SystemError('This package requires Python 3.10 or above.')
+    sys.exit('This package requires Python 3.10 or above.')
 
 
 def get_version():
@@ -35,6 +35,7 @@ setup(
         'Framework :: Django :: 4.2',
         'Framework :: Django :: 5.0',
         'Framework :: Django :: 5.1',
+        'Framework :: Django :: 5.2',
         'License :: OSI Approved :: MIT License',
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.10',
@@ -49,7 +50,9 @@ setup(
     ],
     install_requires=[
         'djangorestframework>=3.14.0',
-        'django-oauth-toolkit>=2.0.0',
+        # >= 2.3.0: hashed client secrets and OAuth2Validator._check_secret,
+        # which drf_social_oauth2.oauth2_validators extends.
+        'django-oauth-toolkit>=2.3.0',
         'social-auth-app-django>=5.0.0',
         'PyJWT>=2.8.0'
     ],

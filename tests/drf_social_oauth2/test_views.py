@@ -62,6 +62,22 @@ def test_get_application(application):
     assert not result
 
 
+def test_prepare_response_with_minimal_user_model(mocker):
+    """Custom AUTH_USER_MODELs need not define email/first_name/last_name;
+    a successful conversion must not 500 while decorating the response."""
+    from drf_social_oauth2.views import ConvertTokenView
+
+    class MinimalUser:
+        """No email, first_name, or last_name attributes."""
+
+    view = ConvertTokenView()
+    mocker.patch.object(view, 'get_user', return_value=MinimalUser())
+
+    data = view.prepare_response({'access_token': 'token'})
+
+    assert data['user'] == {'email': '', 'first_name': '', 'last_name': ''}
+
+
 def test_convert_token_endpoint_with_no_post_params(client_api):
     response = client_api.post(
         reverse('convert_token'),

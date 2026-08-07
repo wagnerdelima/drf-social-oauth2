@@ -52,16 +52,28 @@ TEMPLATES = [
     },
 ]
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.getenv('POSTGRES_DB', 'database'),
-        'HOST': os.getenv('HOST', 'db'),
-        'PORT': int(os.getenv('PORT', 5432)),
-        'USER': os.getenv('POSTGRES_USER', 'user'),
-        'PASSWORD': os.getenv('POSTGRES_PASSWORD', 'password'),
+# The dockerized test flow (docker-compose.tests.yml) runs against Postgres.
+# Set DRFSO2_TEST_DB=sqlite to run the suite locally with no services:
+#   DRFSO2_TEST_DB=sqlite python manage_test.py migrate
+#   DRFSO2_TEST_DB=sqlite pytest
+if os.getenv('DRFSO2_TEST_DB', 'postgres').lower() == 'sqlite':
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': os.path.join(BASE_DIR, 'test_db.sqlite3'),
+        }
     }
-}
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': os.getenv('POSTGRES_DB', 'database'),
+            'HOST': os.getenv('HOST', 'db'),
+            'PORT': int(os.getenv('PORT', 5432)),
+            'USER': os.getenv('POSTGRES_USER', 'user'),
+            'PASSWORD': os.getenv('POSTGRES_PASSWORD', 'password'),
+        }
+    }
 
 
 DRFSO2_PROPRIETARY_BACKEND_NAME = 'Django'

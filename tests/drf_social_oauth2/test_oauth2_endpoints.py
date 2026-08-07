@@ -23,7 +23,7 @@ def test_create_social_token(mocker, user):
     request_validator = mocker.Mock()
     request_validator.save_token = save
 
-    mocker.patch('drf_social_oauth2.oauth2_grants.reverse')
+    mocker.patch('drf_social_oauth2.oauth2_grants.reverse_social_complete')
     backend = mocker.patch('drf_social_oauth2.oauth2_grants.load_backend')
     backend.return_value.do_auth.return_value = user
 
@@ -56,7 +56,7 @@ def test_reuse_social_token(mocker, user, application):
     request_validator.save_token = save
     request_validator.client_authentication_required = assign_request_application
 
-    mocker.patch('drf_social_oauth2.oauth2_grants.reverse')
+    mocker.patch('drf_social_oauth2.oauth2_grants.reverse_social_complete')
     backend = mocker.patch('drf_social_oauth2.oauth2_grants.load_backend')
     backend.return_value.do_auth.return_value = user
 
@@ -94,7 +94,7 @@ def test_social_token_expired(mocker, user, application):
     request_validator.save_token = save
     request_validator.client_authentication_required = assign_request_application
 
-    mocker.patch('drf_social_oauth2.oauth2_grants.reverse')
+    mocker.patch('drf_social_oauth2.oauth2_grants.reverse_social_complete')
     backend = mocker.patch('drf_social_oauth2.oauth2_grants.load_backend')
     backend.return_value.do_auth.return_value = user
 
@@ -131,3 +131,21 @@ def test_social_token_expired(mocker, user, application):
     assert 'access_token' in data
     # if there is a valid token, the expiry date will be smaller than the number when the token was created.
     assert data['expires_in'] == 3600
+
+
+def test_request_scopes_use_configured_defaults(mocker):
+    """Scopes come from django-oauth-toolkit's scopes backend, not a
+    hardcoded ['read', 'write'] — custom scope deployments broke otherwise."""
+    server = SocialTokenServer(request_validator=mocker.Mock())
+
+    # With the stock test settings, DOT's defaults are read/write.
+    request = server._create_django_request('/auth/convert-token')
+    assert request.scopes == ['read', 'write']
+
+    # A project with custom scopes sees its own defaults.
+    scopes_backend = mocker.patch(
+        'drf_social_oauth2.oauth2_endpoints.get_scopes_backend'
+    )
+    scopes_backend.return_value.get_default_scopes.return_value = ['openid']
+    request = server._create_django_request('/auth/convert-token')
+    assert request.scopes == ['openid']

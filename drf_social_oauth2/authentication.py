@@ -7,10 +7,10 @@ with Django REST Framework.
 
 from collections.abc import Callable
 from functools import wraps
+from logging import getLogger
 from typing import Any, TypeVar
 
 from django.contrib.auth.models import AbstractBaseUser
-from django.urls import reverse
 from rest_framework import HTTP_HEADER_ENCODING
 from rest_framework.authentication import BaseAuthentication, get_authorization_header
 from rest_framework.exceptions import AuthenticationFailed
@@ -18,7 +18,10 @@ from rest_framework.request import Request
 from social_core.exceptions import MissingBackend
 from social_core.utils import requests
 from social_django.utils import load_backend, load_strategy
-from social_django.views import NAMESPACE
+
+from drf_social_oauth2.utils import reverse_social_complete
+
+log = getLogger(__name__)
 
 F = TypeVar('F', bound=Callable[..., Any])
 
@@ -106,16 +109,28 @@ class SocialAuthentication(BaseAuthentication):
             backend = load_backend(
                 strategy,
                 backend_name,
-                reverse(f"{NAMESPACE}:complete", args=(backend_name,)),
+                reverse_social_complete(backend_name),
             )
             user = backend.do_auth(access_token=token)
         except MissingBackend:
             raise AuthenticationFailed('Invalid token header. Invalid backend.')
         except requests.HTTPError as e:
-            raise AuthenticationFailed(e.response.text)
+            # The provider's response body may carry sensitive or unbounded
+            # content — log it for operators, return only the status code.
+            log.warning(
+                'Social backend %s rejected the token with HTTP %s: %s',
+                backend_name,
+                e.response.status_code,
+                e.response.text,
+            )
+            raise AuthenticationFailed(
+                f'Backend responded with HTTP {e.response.status_code}.'
+            )
 
         if not user:
             raise AuthenticationFailed('Bad credentials')
+        if not user.is_active:
+            raise AuthenticationFailed('User inactive or deleted.')
         return user, token
 
     def authenticate_header(self, request: Request) -> str:

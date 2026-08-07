@@ -123,7 +123,7 @@ class TestEndToEndGoogleEmailAlias:
     def _patch_google(self, mocker):
         """Mock the redirect_uri reverse() and Google's userinfo HTTP fetch."""
         mocker.patch(
-            'drf_social_oauth2.oauth2_grants.reverse',
+            'drf_social_oauth2.oauth2_grants.reverse_social_complete',
             return_value='/complete/google-identity/',
         )
         return mocker.patch(

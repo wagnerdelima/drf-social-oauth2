@@ -1,6 +1,28 @@
 Change log
 ==========
 
+3.5.0 - 2026-08-07
+------------------
+
+## Security
+
+* ``SocialAuthentication`` now rejects inactive users. The ``/convert-token`` grant already refused to issue tokens to ``is_active=False`` users, but the per-request ``Authorization: Bearer <backend> <token>`` path authenticated them anyway, so deactivating an account did not lock it out of the API.
+* Fix a cross-request race in ``SocialTokenServer``. django-oauth-toolkit caches its oauthlib core — and with it the server instance — per view class, so the Django request stored on the instance was shared by every in-flight request. Under threaded servers two concurrent ``/convert-token`` calls could swap request objects, running one user's social login with another user's session/META. The request now lives in a ``ContextVar``, isolated per thread/async context.
+* Social provider error bodies are no longer echoed to API clients by ``SocialAuthentication`` and the convert-token grant. The upstream response is logged for operators; clients receive only the provider's HTTP status code.
+* New opt-in throttling for the ``/token/``, ``/convert-token/`` and ``/revoke-token/`` endpoints (``drfso2-token``, ``drfso2-convert-token``, ``drfso2-revoke-token`` scopes). Dormant until you configure ``DEFAULT_THROTTLE_RATES``; uses a package-specific view attribute so projects running DRF's stock ``ScopedRateThrottle`` globally are unaffected. See the customization docs.
+
+## What's Changed
+
+* **Applications with hashed client secrets now work** (django-oauth-toolkit >= 2.3 hashes ``client_secret`` on save). ``ConvertTokenView`` and ``RevokeTokenView`` inject the stored secret server-side so clients never send it, but the stock validator re-hashes the presented value and could never match a hashed one — every call failed with ``invalid_client``, and the docs told users to disable the "Hash client secret" checkbox. The new ``drf_social_oauth2.oauth2_validators.SocialTokenValidator`` (used only by those two views) additionally accepts a presented secret byte-equal to the stored value. Real cleartext secrets still validate; ``TokenView``'s password grant keeps the stock validator. You can re-enable the hash checkbox on existing applications. django-oauth-toolkit >= 2.3.0 is now required.
+* **Fix URL namespace resolution for the social ``complete`` URL** (`#79 <https://github.com/wagnerdelima/drf-social-oauth2/issues/79>`_, `#244 <https://github.com/wagnerdelima/drf-social-oauth2/issues/244>`_). ``SocialAuthentication`` reversed ``social:complete`` (a 500 under the documented ``include(..., namespace='drf')`` wiring), the convert-token grant produced ``drf:drf:social:complete`` when ``SOCIAL_AUTH_URL_NAMESPACE='drf:social'`` was set, and ``DisconnectBackendView`` reversed the nonexistent ``drf:complete`` — making the disconnect endpoint a guaranteed 500 under every wiring. All three now use ``drf_social_oauth2.utils.reverse_social_complete``, which tries each plausible namespace spelling and raises an actionable error naming ``SOCIAL_AUTH_URL_NAMESPACE`` if none resolves. No configuration change is required for existing deployments.
+* ``DisconnectBackendView`` returns ``HTTP 400`` instead of crashing when the association is the user's only login method (``NotAllowedToDisconnect``).
+* Converted tokens honour the project's configured default scopes (``OAUTH2_PROVIDER['SCOPES']``/``DEFAULT_SCOPES``) instead of a hardcoded ``read write``.
+* ``ConvertTokenView`` no longer 500s after a successful conversion when the custom ``AUTH_USER_MODEL`` lacks ``email``, ``first_name`` or ``last_name`` attributes.
+* The ``createapp`` management command prints the generated ``client_id`` and ``client_secret`` (the secret is hashed at rest, so this is the only chance to capture it) and exits with a clear error instead of an ``IndexError`` when no superuser exists.
+* Removed the dead ``ROTATE_REFRESH_TOKEN``, ``REFRESH_TOKEN_REUSE_PROTECTION``, ``REFRESH_TOKEN_GRACE_PERIOD_SECONDS`` and ``REFRESH_TOKEN_EXPIRE_SECONDS`` constants from ``drf_social_oauth2.settings``. They were never consumed by any code and implied defaults that django-oauth-toolkit does not actually apply (its real defaults: rotation on, reuse protection **off**, refresh tokens never expire). Configure these in ``OAUTH2_PROVIDER``; the customization docs show the recommended hardening.
+* The test suite runs without Docker: ``DRFSO2_TEST_DB=sqlite`` switches the test settings to SQLite.
+* Documentation: modernized the URLconf examples (the old ones used ``patterns()``, removed in Django 1.10), documented ``SOCIAL_AUTH_URL_NAMESPACE = 'drf:social'``, corrected the refresh-token-rotation defaults, and added the throttling guide.
+
 3.4.2 - 2026-07-30
 ------------------
 
