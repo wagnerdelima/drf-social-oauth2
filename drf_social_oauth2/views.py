@@ -38,7 +38,11 @@ from rest_framework.status import (
     HTTP_500_INTERNAL_SERVER_ERROR,
 )
 from rest_framework.views import APIView
-from social_core.exceptions import MissingBackend, SocialAuthBaseException
+from social_core.exceptions import (
+    MissingBackend,
+    NotAllowedToDisconnect,
+    SocialAuthBaseException,
+)
 from social_django.utils import load_backend, load_strategy
 
 from drf_social_oauth2.oauth2_backends import KeepRequestCore
@@ -503,8 +507,21 @@ class DisconnectBackendView(APIView):
             backend.disconnect(
                 user=self.get_object(), association_id=association_id, **kwargs
             )
-        except SocialAuthBaseException as e:
-            # e.g. NotAllowedToDisconnect: the association is the user's only
-            # way to log in. A client error, not a server crash.
-            return Response({"detail": str(e)}, status=HTTP_400_BAD_REQUEST)
+        except NotAllowedToDisconnect:
+            # The association is the user's only way to log in. A client
+            # error, not a server crash. Hardcoded message: exception text
+            # must not flow to API clients (CodeQL py/stack-trace-exposure).
+            return Response(
+                {
+                    "detail": "This social account cannot be disconnected "
+                    "because it is your only way to log in."
+                },
+                status=HTTP_400_BAD_REQUEST,
+            )
+        except SocialAuthBaseException:
+            logger.exception('Failed to disconnect social backend.')
+            return Response(
+                {"detail": "Unable to disconnect the specified backend."},
+                status=HTTP_400_BAD_REQUEST,
+            )
         return Response(status=HTTP_204_NO_CONTENT)

@@ -15,7 +15,6 @@ REAL validator chain (client_authentication_required -> authenticate_client
 -> _check_secret); only the social provider round-trip is mocked.
 """
 
-from django.contrib.auth.models import User
 from django.urls import reverse
 from oauth2_provider.models import AccessToken, Application, RefreshToken
 from oauth2_provider.oauth2_validators import OAuth2Validator

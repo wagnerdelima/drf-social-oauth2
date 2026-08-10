@@ -50,11 +50,9 @@ def test_authenticate_wrongly_formatted_token_fail():
 
 
 def test_authenticate(mocker):
-    token = 'Bearer facebook 401f7ac837da42b97f613d789819ff93537bee6a'
-
-    request = mocker.patch('django.http.request.HttpRequest')
-    request.session = None
-    request.META = {'HTTP_AUTHORIZATION': token}
+    # A real HttpRequest: DRF >= 3.18 reads request.headers, which mocked
+    # request classes don't populate from META.
+    request = create_request('Bearer facebook 401f7ac837da42b97f613d789819ff93537bee6a')
 
     mocker.patch('drf_social_oauth2.authentication.load_backend')
     authenticated = SocialAuthentication()
@@ -73,11 +71,7 @@ def test_authenticate_missing_backend():
 
 
 def test_authenticate_user_not_found(mocker):
-    token = 'Bearer facebook 401f7ac837da42b97f613d789819ff93537bee6a'
-
-    request = mocker.patch('django.http.request.HttpRequest')
-    request.session = None
-    request.META = {'HTTP_AUTHORIZATION': token}
+    request = create_request('Bearer facebook 401f7ac837da42b97f613d789819ff93537bee6a')
 
     load_backend_mocker = mocker.patch('drf_social_oauth2.authentication.load_backend')
     load_backend_mocker.return_value.do_auth.return_value = None
@@ -87,12 +81,8 @@ def test_authenticate_user_not_found(mocker):
         authenticated.authenticate(request)
 
 
-def test_authenticate_header(mocker):
-    token = 'Bearer facebook 401f7ac837da42b97f613d789819ff93537bee6a'
-
-    request = mocker.patch('django.http.request.HttpRequest')
-    request.session = None
-    request.META = {'HTTP_AUTHORIZATION': token}
+def test_authenticate_header():
+    request = create_request('Bearer facebook 401f7ac837da42b97f613d789819ff93537bee6a')
 
     authenticated = SocialAuthentication()
     text = authenticated.authenticate_header(request)
@@ -103,11 +93,7 @@ def test_authenticate_inactive_user_fail(mocker):
     """A deactivated user's social token must not authenticate: the
     convert-token grant already rejected inactive users, but this per-request
     path did not."""
-    token = 'Bearer facebook 401f7ac837da42b97f613d789819ff93537bee6a'
-
-    request = mocker.patch('django.http.request.HttpRequest')
-    request.session = None
-    request.META = {'HTTP_AUTHORIZATION': token}
+    request = create_request('Bearer facebook 401f7ac837da42b97f613d789819ff93537bee6a')
 
     load_backend_mocker = mocker.patch('drf_social_oauth2.authentication.load_backend')
     load_backend_mocker.return_value.do_auth.return_value.is_active = False
@@ -122,11 +108,7 @@ def test_authenticate_provider_error_is_not_echoed(mocker):
     caller."""
     from social_core.utils import requests
 
-    token = 'Bearer facebook 401f7ac837da42b97f613d789819ff93537bee6a'
-
-    request = mocker.patch('django.http.request.HttpRequest')
-    request.session = None
-    request.META = {'HTTP_AUTHORIZATION': token}
+    request = create_request('Bearer facebook 401f7ac837da42b97f613d789819ff93537bee6a')
 
     provider_response = mocker.Mock(status_code=401, text='sensitive-upstream-details')
     load_backend_mocker = mocker.patch('drf_social_oauth2.authentication.load_backend')
