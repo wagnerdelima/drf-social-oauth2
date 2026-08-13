@@ -22,6 +22,7 @@ setup(
     version=get_version(),
     description='OAuth2 social authentication for Django REST Framework',
     long_description=open('README.rst').read(),
+    long_description_content_type='text/x-rst',
     author='Wagner de Lima',
     author_email='waglds@gmail.com',
     url='https://github.com/wagnerdelima/drf-social-oauth2',

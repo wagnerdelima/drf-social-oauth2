@@ -1,7 +1,7 @@
 Change log
 ==========
 
-3.5.0 - 2026-08-07
+3.5.0 - 2026-08-13
 ------------------
 
 ## Security
@@ -20,6 +20,7 @@ Change log
 * ``ConvertTokenView`` no longer 500s after a successful conversion when the custom ``AUTH_USER_MODEL`` lacks ``email``, ``first_name`` or ``last_name`` attributes.
 * The ``createapp`` management command prints the generated ``client_id`` and ``client_secret`` (the secret is hashed at rest, so this is the only chance to capture it) and exits with a clear error instead of an ``IndexError`` when no superuser exists.
 * Removed the dead ``ROTATE_REFRESH_TOKEN``, ``REFRESH_TOKEN_REUSE_PROTECTION``, ``REFRESH_TOKEN_GRACE_PERIOD_SECONDS`` and ``REFRESH_TOKEN_EXPIRE_SECONDS`` constants from ``drf_social_oauth2.settings``. They were never consumed by any code and implied defaults that django-oauth-toolkit does not actually apply (its real defaults: rotation on, reuse protection **off**, refresh tokens never expire). Configure these in ``OAUTH2_PROVIDER``; the customization docs show the recommended hardening.
+* The ``createapp`` management command now actually ships in the published package: ``drf_social_oauth2/management/`` had no ``__init__.py`` files, so ``find_packages()`` silently excluded it from every previous PyPI release — it only worked from a git checkout.
 * The test suite runs without Docker: ``DRFSO2_TEST_DB=sqlite`` switches the test settings to SQLite.
 * Documentation: modernized the URLconf examples (the old ones used ``patterns()``, removed in Django 1.10), documented ``SOCIAL_AUTH_URL_NAMESPACE = 'drf:social'``, corrected the refresh-token-rotation defaults, and added the throttling guide.
 
