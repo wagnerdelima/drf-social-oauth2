@@ -11,7 +11,6 @@ including:
 import uuid
 from datetime import datetime, timedelta, timezone
 
-from django.conf import settings
 from django.test import override_settings
 from django.urls import reverse
 from oauth2_provider.models import AccessToken, RefreshToken
@@ -67,33 +66,32 @@ def refresh_token(user, application, access_token):
 
 
 class TestRefreshTokenRotationSettings:
-    """Tests for refresh token rotation settings."""
+    """Rotation is configured through django-oauth-toolkit's OAUTH2_PROVIDER
+    dict; drf-social-oauth2 no longer exposes (dead) mirror constants."""
 
-    def test_default_rotation_enabled(self):
-        """Test that rotation is enabled by default."""
-        from drf_social_oauth2.settings import ROTATE_REFRESH_TOKEN
-        assert ROTATE_REFRESH_TOKEN is True
+    def test_package_exposes_no_rotation_constants(self):
+        """The old module-level constants were never consumed by any code and
+        misrepresented django-oauth-toolkit's real defaults; make sure they
+        stay gone."""
+        from drf_social_oauth2 import settings as drf_settings
 
-    def test_default_reuse_protection_enabled(self):
-        """Test that reuse protection is enabled by default."""
-        from drf_social_oauth2.settings import REFRESH_TOKEN_REUSE_PROTECTION
-        assert REFRESH_TOKEN_REUSE_PROTECTION is True
+        for name in (
+            'ROTATE_REFRESH_TOKEN',
+            'REFRESH_TOKEN_REUSE_PROTECTION',
+            'REFRESH_TOKEN_GRACE_PERIOD_SECONDS',
+            'REFRESH_TOKEN_EXPIRE_SECONDS',
+        ):
+            assert not hasattr(drf_settings, name)
 
-    def test_default_grace_period(self):
-        """Test the default grace period is 0."""
-        from drf_social_oauth2.settings import REFRESH_TOKEN_GRACE_PERIOD_SECONDS
-        assert REFRESH_TOKEN_GRACE_PERIOD_SECONDS == 0
+    def test_oauth2_provider_settings_drive_dot(self):
+        """The OAUTH2_PROVIDER dict is what django-oauth-toolkit actually
+        reads; the test settings enable rotation with reuse protection."""
+        from oauth2_provider.settings import oauth2_settings as dot_settings
 
-    def test_default_expire_seconds(self):
-        """Test the default refresh token expiration."""
-        from drf_social_oauth2.settings import REFRESH_TOKEN_EXPIRE_SECONDS
-        assert REFRESH_TOKEN_EXPIRE_SECONDS == 1209600  # 14 days
-
-    def test_settings_from_oauth2_provider(self):
-        """Test that settings are read from OAUTH2_PROVIDER dict."""
-        oauth2_settings = getattr(settings, 'OAUTH2_PROVIDER', {})
-        assert oauth2_settings.get('ROTATE_REFRESH_TOKEN') is True
-        assert oauth2_settings.get('REFRESH_TOKEN_REUSE_PROTECTION') is True
+        assert dot_settings.ROTATE_REFRESH_TOKEN is True
+        assert dot_settings.REFRESH_TOKEN_REUSE_PROTECTION is True
+        assert dot_settings.REFRESH_TOKEN_GRACE_PERIOD_SECONDS == 0
+        assert dot_settings.REFRESH_TOKEN_EXPIRE_SECONDS == 1209600
 
 
 class TestRefreshTokenRotationBehavior:
@@ -291,15 +289,11 @@ class TestRefreshTokenRotationIntegration:
         }
     )
     def test_rotation_settings_applied(self):
-        """Test that rotation settings are properly applied."""
-        # Re-import to get fresh settings
-        from importlib import reload
+        """django-oauth-toolkit picks up OAUTH2_PROVIDER overrides."""
+        from oauth2_provider.settings import oauth2_settings as dot_settings
 
-        from drf_social_oauth2 import settings as drf_settings
-        reload(drf_settings)
-
-        assert drf_settings.ROTATE_REFRESH_TOKEN is True
-        assert drf_settings.REFRESH_TOKEN_REUSE_PROTECTION is True
+        assert dot_settings.ROTATE_REFRESH_TOKEN is True
+        assert dot_settings.REFRESH_TOKEN_REUSE_PROTECTION is True
 
     def test_token_endpoint_exists(self, client_api):
         """Test that the token endpoint is accessible."""

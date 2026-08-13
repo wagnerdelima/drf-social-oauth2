@@ -325,7 +325,7 @@ class TestConvertTokenRejectsCrossClientToken:
 
     def _convert(self, mocker, google_app, claims):
         mocker.patch(
-            'drf_social_oauth2.oauth2_grants.reverse',
+            'drf_social_oauth2.oauth2_grants.reverse_social_complete',
             return_value='/complete/google-identity/',
         )
         mocker.patch(

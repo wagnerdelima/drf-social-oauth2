@@ -43,23 +43,25 @@ Include social auth urls to your urls.py:
 
 .. code-block:: python
 
-    from django.conf.urls import url
+    from django.urls import include, path
 
-    urlpatterns = patterns(
+    urlpatterns = [
         ...
-        url(r'^auth/', include('drf_social_oauth2.urls', namespace='drf'))
-    )
+        path('auth/', include('drf_social_oauth2.urls', namespace='drf')),
+    ]
 
-For versions of Django 4.0 or higher, use `re_path` instead:
+This nests social_django's URLs (login, complete, disconnect) under the
+``drf:social`` namespace. social_django's own views reverse their URLs
+through the ``SOCIAL_AUTH_URL_NAMESPACE`` setting, so tell it about the
+nesting:
 
 .. code-block:: python
 
-    from django.urls import re_path
+    SOCIAL_AUTH_URL_NAMESPACE = 'drf:social'
 
-    urlpatterns = patterns(
-        ...
-        re_path(r'^auth/', include('drf_social_oauth2.urls', namespace='drf'))
-    )
+drf-social-oauth2's endpoints themselves resolve the namespace
+automatically, whether or not this setting is present — but social_django's
+redirect-based views (e.g. ``/auth/login/<backend>/``) need it.
 
 Next, add the following context processors to your TEMPLATE_CONTEXT_PROCESSORS:
 

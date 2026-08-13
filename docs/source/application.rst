@@ -28,9 +28,12 @@ Screenshot of the new application creation.
   :width: 1200
   :alt: Adding a new application to your drf-social-oauth2 installation.
 
-In your new application, you will see a Hash client secret checkbox. Do not select that checkbox as the client secret
-will be hashed and I have not yet worked on a fix for that. It turns out that when hashed, the convert-token response
-is invalid.
+Your new application shows a "Hash client secret" checkbox. Since version
+3.5.0 you can leave it enabled (django-oauth-toolkit's default): the
+convert-token and revoke-token endpoints authenticate the application
+server-side and work with hashed secrets. Earlier releases required the
+checkbox to be disabled — if you unchecked it back then, it is safe to
+re-enable now.
 
 Note that, this new version of drf-social-oauth2 does not require the client_secret to be passed on the HTTPs requests.
 

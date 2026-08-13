@@ -7,16 +7,14 @@ social authentication token conversion.
 
 from logging import getLogger
 
-from django.urls import reverse
 from oauthlib.common import Request
 from oauthlib.oauth2.rfc6749 import errors
 from oauthlib.oauth2.rfc6749.grant_types.refresh_token import RefreshTokenGrant
 from social_core.exceptions import MissingBackend, SocialAuthBaseException
 from social_core.utils import requests
 from social_django.utils import load_backend, load_strategy
-from social_django.views import NAMESPACE
 
-from drf_social_oauth2.settings import DRFSO2_URL_NAMESPACE
+from drf_social_oauth2.utils import reverse_social_complete
 
 log = getLogger(__name__)
 
@@ -105,10 +103,7 @@ class SocialTokenGrant(RefreshTokenGrant):
             backend = load_backend(
                 strategy,
                 request.backend,
-                reverse(
-                    f"{DRFSO2_URL_NAMESPACE}:{NAMESPACE}:complete",
-                    args=(request.backend,),
-                ),
+                reverse_social_complete(request.backend),
             )
         except MissingBackend:
             raise errors.InvalidRequestError(
@@ -119,8 +114,16 @@ class SocialTokenGrant(RefreshTokenGrant):
         try:
             user = backend.do_auth(access_token=request.token)
         except requests.HTTPError as e:
+            # The provider's response body may carry sensitive or unbounded
+            # content — log it for operators, return only the status code.
+            log.warning(
+                'Social backend %s rejected the token with HTTP %s: %s',
+                request.backend,
+                e.response.status_code,
+                e.response.text,
+            )
             raise errors.InvalidRequestError(
-                description=f"Backend responded with HTTP{e.response.status_code}: {e.response.text}.",
+                description=f"Backend responded with HTTP {e.response.status_code}.",
                 request=request,
             )
         except SocialAuthBaseException as e:

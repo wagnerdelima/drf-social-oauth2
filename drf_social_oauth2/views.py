@@ -15,7 +15,6 @@ from typing import Any
 from django.contrib.auth.models import AbstractBaseUser
 from django.db import IntegrityError
 from django.db.transaction import TransactionManagementError
-from django.urls import reverse
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from oauth2_provider.models import AccessToken, Application, RefreshToken
@@ -31,6 +30,7 @@ from oauthlib.oauth2.rfc6749.errors import (
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
+from rest_framework.settings import api_settings
 from rest_framework.status import (
     HTTP_204_NO_CONTENT,
     HTTP_400_BAD_REQUEST,
@@ -38,11 +38,16 @@ from rest_framework.status import (
     HTTP_500_INTERNAL_SERVER_ERROR,
 )
 from rest_framework.views import APIView
-from social_core.exceptions import MissingBackend
+from social_core.exceptions import (
+    MissingBackend,
+    NotAllowedToDisconnect,
+    SocialAuthBaseException,
+)
 from social_django.utils import load_backend, load_strategy
 
 from drf_social_oauth2.oauth2_backends import KeepRequestCore
 from drf_social_oauth2.oauth2_endpoints import SocialTokenServer
+from drf_social_oauth2.oauth2_validators import SocialTokenValidator
 from drf_social_oauth2.serializers import (
     ConvertTokenSerializer,
     DisconnectBackendSerializer,
@@ -50,6 +55,8 @@ from drf_social_oauth2.serializers import (
     InvalidateSessionsSerializer,
     RevokeTokenSerializer,
 )
+from drf_social_oauth2.throttling import OptInScopedRateThrottle
+from drf_social_oauth2.utils import reverse_social_complete
 
 logger = logging.getLogger(__package__)
 
@@ -130,6 +137,9 @@ class TokenView(CsrfExemptMixin, OAuthLibMixin, APIView):
     validator_class = oauth2_settings.OAUTH2_VALIDATOR_CLASS
     oauthlib_backend_class = oauth2_settings.OAUTH2_BACKEND_CLASS
     permission_classes = (AllowAny,)
+    # Opt-in throttling: dormant until a rate is configured for this scope.
+    throttle_classes = (*api_settings.DEFAULT_THROTTLE_CLASSES, OptInScopedRateThrottle)
+    drfso2_throttle_scope = 'drfso2-token'
 
     def post(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         """Handle POST request to generate access tokens.
@@ -170,9 +180,15 @@ class ConvertTokenView(CsrfExemptMixin, OAuthLibMixin, APIView):
     """
 
     server_class = SocialTokenServer
-    validator_class = oauth2_settings.OAUTH2_VALIDATOR_CLASS
+    # SocialTokenValidator also accepts the server-injected stored secret, so
+    # applications with hashed client secrets (django-oauth-toolkit >= 2.3
+    # hashes on save) keep working. See its docstring for the security model.
+    validator_class = SocialTokenValidator
     oauthlib_backend_class = KeepRequestCore
     permission_classes = (AllowAny,)
+    # Opt-in throttling: dormant until a rate is configured for this scope.
+    throttle_classes = (*api_settings.DEFAULT_THROTTLE_CLASSES, OptInScopedRateThrottle)
+    drfso2_throttle_scope = 'drfso2-convert-token'
 
     def get_user(self, access_token: str) -> AbstractBaseUser | None:
         """Retrieve the user associated with an access token.
@@ -197,10 +213,12 @@ class ConvertTokenView(CsrfExemptMixin, OAuthLibMixin, APIView):
         """
         user = self.get_user(data.get('access_token'))
         if user:
+            # Custom AUTH_USER_MODELs are not required to define these fields;
+            # a missing one must not 500 a conversion that already succeeded.
             data['user'] = {
-                'email': user.email,
-                'first_name': user.first_name,
-                'last_name': user.last_name,
+                'email': getattr(user, 'email', ''),
+                'first_name': getattr(user, 'first_name', ''),
+                'last_name': getattr(user, 'last_name', ''),
             }
         return data
 
@@ -299,9 +317,13 @@ class RevokeTokenView(CsrfExemptMixin, OAuthLibMixin, APIView):
     """
 
     server_class = oauth2_settings.OAUTH2_SERVER_CLASS
-    validator_class = oauth2_settings.OAUTH2_VALIDATOR_CLASS
+    # Accepts the server-injected stored secret so hashed client secrets work.
+    validator_class = SocialTokenValidator
     oauthlib_backend_class = oauth2_settings.OAUTH2_BACKEND_CLASS
     permission_classes = (IsAuthenticated,)
+    # Opt-in throttling: dormant until a rate is configured for this scope.
+    throttle_classes = (*api_settings.DEFAULT_THROTTLE_CLASSES, OptInScopedRateThrottle)
+    drfso2_throttle_scope = 'drfso2-revoke-token'
 
     def post(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         """Handle POST request to revoke a token.
@@ -473,16 +495,33 @@ class DisconnectBackendView(APIView):
         association_id: int = serializer.validated_data['association_id']
         strategy = load_strategy(request=request)
         try:
-            namespace = 'drf'
             backend = load_backend(
-                strategy, backend_name, reverse(namespace + ":complete", args=(backend_name,))
+                strategy, backend_name, reverse_social_complete(backend_name)
             )
         except MissingBackend:
             return Response(
                 {"backend": ["Invalid backend."]}, status=HTTP_400_BAD_REQUEST
             )
 
-        backend.disconnect(
-            user=self.get_object(), association_id=association_id, **kwargs
-        )
+        try:
+            backend.disconnect(
+                user=self.get_object(), association_id=association_id, **kwargs
+            )
+        except NotAllowedToDisconnect:
+            # The association is the user's only way to log in. A client
+            # error, not a server crash. Hardcoded message: exception text
+            # must not flow to API clients (CodeQL py/stack-trace-exposure).
+            return Response(
+                {
+                    "detail": "This social account cannot be disconnected "
+                    "because it is your only way to log in."
+                },
+                status=HTTP_400_BAD_REQUEST,
+            )
+        except SocialAuthBaseException:
+            logger.exception('Failed to disconnect social backend.')
+            return Response(
+                {"detail": "Unable to disconnect the specified backend."},
+                status=HTTP_400_BAD_REQUEST,
+            )
         return Response(status=HTTP_204_NO_CONTENT)

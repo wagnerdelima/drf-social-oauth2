@@ -37,26 +37,33 @@ to obtain a new access token. This helps mitigate the risk of refresh token thef
 
 **Configuration:**
 
-Add the following to your ``OAUTH2_PROVIDER`` settings in ``settings.py``:
+These settings belong to django-oauth-toolkit and are read from the
+``OAUTH2_PROVIDER`` dict; drf-social-oauth2 does not change their defaults.
+Out of the box django-oauth-toolkit rotates refresh tokens but ships with
+reuse protection **off** and refresh tokens that **never expire**, so the
+recommended hardening is:
 
 .. code-block:: python
 
     OAUTH2_PROVIDER = {
-        # Enable refresh token rotation (default: True)
+        # Enable refresh token rotation (django-oauth-toolkit default: True)
         'ROTATE_REFRESH_TOKEN': True,
 
         # Enable reuse protection - revokes all tokens if a used refresh token
-        # is reused (default: True)
+        # is reused (django-oauth-toolkit default: False)
         'REFRESH_TOKEN_REUSE_PROTECTION': True,
 
         # Grace period in seconds - how long the old refresh token remains
-        # valid after rotation to handle concurrent requests (default: 0)
+        # valid after rotation to handle concurrent requests
+        # (django-oauth-toolkit default: 0)
         'REFRESH_TOKEN_GRACE_PERIOD_SECONDS': 30,
 
-        # Refresh token lifetime in seconds (default: 14 days)
+        # Refresh token lifetime in seconds - 14 days
+        # (django-oauth-toolkit default: None, i.e. refresh tokens never expire)
         'REFRESH_TOKEN_EXPIRE_SECONDS': 1209600,
 
-        # Access token lifetime in seconds (default: 1 hour)
+        # Access token lifetime in seconds - 1 hour
+        # (django-oauth-toolkit default: 36000, i.e. 10 hours)
         'ACCESS_TOKEN_EXPIRE_SECONDS': 3600,
     }
 
@@ -95,6 +102,31 @@ When refresh token rotation is enabled, your client application must:
 - **Detects theft**: If an attacker uses a stolen refresh token after the legitimate user has already used it,
   the reuse is detected and all tokens are revoked.
 - **Reduces attack window**: The grace period can be set to a small value to minimize the window of vulnerability.
+
+Throttling the token endpoints
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+``/token/``, ``/convert-token/`` and ``/revoke-token/`` accept
+unauthenticated or lightly-authenticated traffic, and ``/convert-token/``
+performs an outbound HTTP request to the social provider on every call —
+making them brute-force and amplification targets. The views ship with an
+opt-in scoped throttle that stays dormant until you configure a rate:
+
+.. code-block:: python
+
+    REST_FRAMEWORK = {
+        'DEFAULT_THROTTLE_RATES': {
+            'drfso2-token': '60/min',
+            'drfso2-convert-token': '30/min',
+            'drfso2-revoke-token': '30/min',
+        },
+    }
+
+Only the scopes you configure are enforced; the others keep allowing all
+traffic. The throttle reads its scope from a package-specific view attribute
+(``drfso2_throttle_scope``), so projects that run DRF's stock
+``ScopedRateThrottle`` globally are unaffected. Any throttle classes in
+``DEFAULT_THROTTLE_CLASSES`` continue to apply to these views as well.
 
 Google Email Alias Normalization
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
